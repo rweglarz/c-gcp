@@ -10,6 +10,9 @@ variable "name" {
 variable "cidr" {
   type = string
 }
+variable "m_cidr" {
+  type = string
+}
 variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))

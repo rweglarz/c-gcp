@@ -12,6 +12,11 @@ resource "google_container_cluster" "gke" {
 
   network    = google_compute_network.gke.self_link
   subnetwork = google_compute_subnetwork.gke.self_link
+  networking_mode = "VPC_NATIVE"
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block = ""
+  }
+
   master_authorized_networks_config {
     dynamic "cidr_blocks" {
       for_each = var.mgmt_ips
@@ -21,6 +26,10 @@ resource "google_container_cluster" "gke" {
       }
     }
   }
+  private_cluster_config {
+    enable_private_nodes    = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = var.m_cidr
   }
 }
 
