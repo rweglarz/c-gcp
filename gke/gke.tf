@@ -3,7 +3,7 @@ resource "google_service_account" "gke" {
   display_name = "${var.name}-gke-sa"
 }
 
-resource "google_container_cluster" "primary" {
+resource "google_container_cluster" "gke" {
   name     = var.name
   location = var.region
 
@@ -27,7 +27,7 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "np1" {
   name       = "${var.name}-np1"
   location   = var.region
-  cluster    = google_container_cluster.primary.name
+  cluster    = google_container_cluster.gke.name
   node_count = 1
 
   node_config {
