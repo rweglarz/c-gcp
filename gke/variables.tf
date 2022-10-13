@@ -14,3 +14,7 @@ variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))
 }
+
+variable "pl-mgmt-csp_nat_ips" {
+  type = string
+}
