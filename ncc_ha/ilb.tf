@@ -1,13 +1,3 @@
-locals {
-  data_nets = [
-    google_compute_network.internet,
-    google_compute_network.internal,
-  ]
-  data_subnets = [
-    google_compute_subnetwork.internet,
-    google_compute_subnetwork.internal,
-  ]
-}
 resource "google_compute_region_health_check" "fw" {
   name                = "${var.name}-rhealthcheck"
   check_interval_sec  = 1
@@ -20,15 +10,14 @@ resource "google_compute_region_health_check" "fw" {
   }
 }
 
-resource "google_compute_region_backend_service" "bsvc" {
+resource "google_compute_region_backend_service" "internal" {
   provider              = google-beta
-  count                 = 2
-  name                  = "${var.name}-bsvc-${count.index}"
+  name                  = "${var.name}-internal"
   protocol              = "TCP"
   load_balancing_scheme = "INTERNAL"
   health_checks         = [google_compute_region_health_check.fw.id]
   session_affinity      = "CLIENT_IP"
-  network               = local.data_nets[count.index].id
+  network               = google_compute_network.internal.id
   backend {
     group = google_compute_instance_group.fws.id
   }
@@ -38,15 +27,14 @@ resource "google_compute_region_backend_service" "bsvc" {
   }
 }
 
-resource "google_compute_forwarding_rule" "fwdrule" {
-  count                 = 2
-  name                  = "${var.name}-fwdrule-${count.index}"
-  backend_service       = google_compute_region_backend_service.bsvc[count.index].id
+resource "google_compute_forwarding_rule" "internal" {
+  name                  = "${var.name}-internal"
+  backend_service       = google_compute_region_backend_service.internal.id
   load_balancing_scheme = "INTERNAL"
   all_ports             = true
-  network               = local.data_nets[count.index].id
-  subnetwork            = local.data_subnets[count.index].id
-  ip_address            = cidrhost(local.data_subnets[count.index].ip_cidr_range, 2)
+  network               = google_compute_network.internal.id
+  subnetwork            = google_compute_subnetwork.internal.id
+  ip_address            = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 2)
 }
 
 

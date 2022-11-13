@@ -49,19 +49,32 @@ resource "google_compute_subnetwork" "ha" {
   ipv6_access_type = "EXTERNAL"
 }
 
-resource "google_compute_network" "other" {
-  name                    = "${var.name}-other"
+resource "google_compute_network" "srv0" {
+  name                    = "${var.name}-srv0"
   auto_create_subnetworks = "false"
 }
-resource "google_compute_subnetwork" "other" {
-  count         = 4
-  name          = "${var.name}-other-s${count.index}"
-  ip_cidr_range = cidrsubnet(var.cidr, 4, 4 + count.index)
-  network       = google_compute_network.other.id
+resource "google_compute_subnetwork" "srv0-s0" {
+  name          = "${var.name}-srv0-s0"
+  ip_cidr_range = cidrsubnet(var.cidr, 4, 4)
+  network       = google_compute_network.srv0.id
 
   stack_type       = "IPV4_IPV6"
   ipv6_access_type = "EXTERNAL"
 }
+resource "google_compute_network" "srv1" {
+  name                    = "${var.name}-srv1"
+  auto_create_subnetworks = "false"
+}
+resource "google_compute_subnetwork" "srv1-s0" {
+  name          = "${var.name}-srv1-s0"
+  ip_cidr_range = cidrsubnet(var.cidr, 4, 5)
+  network       = google_compute_network.srv1.id
+
+  stack_type       = "IPV4_IPV6"
+  ipv6_access_type = "EXTERNAL"
+}
+
+
 
 
 
@@ -120,29 +133,29 @@ resource "google_compute_firewall" "mgmt-i-tmp" {
 }
 
 
-resource "google_compute_route" "route" {
-  count        = 2
-  name         = "${var.name}-o-${count.index}"
-  dest_range   = "172.16.0.0/12"
-  network      = local.data_nets[count.index].id
-  next_hop_ilb = google_compute_forwarding_rule.fwdrule[count.index].ip_address
+resource "google_compute_route" "srv0-dg" {
+  name         = "${var.name}-srv0-dg"
+  dest_range   = "0.0.0.0/0"
+  network      = google_compute_network.srv0.id
+  next_hop_ilb = google_compute_forwarding_rule.internal.ip_address
+  priority     = 10
+}
+resource "google_compute_route" "srv1-dg" {
+  name         = "${var.name}-srv1-dg"
+  dest_range   = "0.0.0.0/0"
+  network      = google_compute_network.srv1.id
+  next_hop_ilb = google_compute_forwarding_rule.internal.ip_address
   priority     = 10
 }
 
-resource "google_compute_route" "net1-dg" {
-  name         = "${var.name}-dg"
-  dest_range   = "0.0.0.0/0"
-  network      = local.data_nets[1].id
-  next_hop_ilb = google_compute_forwarding_rule.fwdrule[1].ip_address
-  priority     = 10
-}
 resource "google_compute_route" "net1-mgmt-exc" {
   for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
   name             = "${var.name}-${each.key}"
   description      = "mgmt traffic exceptions"
   dest_range       = each.value
-  network          = local.data_nets[1].id
+  network          = google_compute_network.internal.id
   next_hop_gateway = "default-internet-gateway"
   priority         = 10
 }
+
 

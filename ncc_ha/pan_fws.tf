@@ -27,7 +27,7 @@ resource "google_compute_instance" "fw" {
 
   boot_disk {
     initialize_params {
-      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1014"
+      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1017"
     }
     auto_delete = true
   }
