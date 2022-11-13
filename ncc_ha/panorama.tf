@@ -26,11 +26,35 @@ resource "panos_panorama_template_variable" "ncc_fw0-peer_ip" {
   type           = "ip-netmask"
   value          = google_compute_instance.fw[1].network_interface[1].network_ip
 }
-resource "panos_panorama_template_variable" "ncc_fw1_peer_ip" {
+resource "panos_panorama_template_variable" "ncc_fw1-peer_ip" {
   template_stack = panos_panorama_template_stack.ncc_fw1.name
   name           = "$ha1-peer-ip"
   type           = "ip-netmask"
   value          = google_compute_instance.fw[0].network_interface[1].network_ip
+}
+resource "panos_panorama_template_variable" "ncc_fw0-ha2_local_ip" {
+  template_stack = panos_panorama_template_stack.ncc_fw0.name
+  name           = "$ha2-local-ip"
+  type           = "ip-netmask"
+  value          = google_compute_instance.fw[0].network_interface[3].network_ip
+}
+resource "panos_panorama_template_variable" "ncc_fw1-ha2_local_ip" {
+  template_stack = panos_panorama_template_stack.ncc_fw1.name
+  name           = "$ha2-local-ip"
+  type           = "ip-netmask"
+  value          = google_compute_instance.fw[1].network_interface[3].network_ip
+}
+resource "panos_panorama_template_variable" "ncc_fw0-ha2_gw" {
+  template_stack = panos_panorama_template_stack.ncc_fw0.name
+  name           = "$ha2-gw"
+  type           = "ip-netmask"
+  value          = cidrhost(google_compute_subnetwork.ha.ip_cidr_range, 1)
+}
+resource "panos_panorama_template_variable" "ncc_fw1-ha2_gw" {
+  template_stack = panos_panorama_template_stack.ncc_fw1.name
+  name           = "$ha2-gw"
+  type           = "ip-netmask"
+  value          = cidrhost(google_compute_subnetwork.ha.ip_cidr_range, 1)
 }
 
 
@@ -78,7 +102,7 @@ resource "panos_panorama_loopback_interface" "ncc_lo1" {
 }
 resource "panos_panorama_loopback_interface" "ncc_lo2" {
   template = panos_panorama_template.ncc.name
-  name     = "loopback.3"
+  name     = "loopback.2"
   static_ips = [
     "${google_compute_forwarding_rule.internal.ip_address}/32",
   ]
