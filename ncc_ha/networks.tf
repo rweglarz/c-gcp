@@ -112,6 +112,33 @@ resource "google_compute_firewall" "internal-i" {
   direction = "INGRESS"
   source_ranges = concat(
     ["172.16.0.0/12"],
+    [for r in var.gcp_ips : "${r.cidr}"],
+    [for r in var.tmp_ips : "${r.cidr}"],
+  )
+  allow {
+    protocol = "all"
+  }
+}
+resource "google_compute_firewall" "srv0-i" {
+  name      = "${var.name}-srv0-i"
+  network   = google_compute_network.srv0.id
+  direction = "INGRESS"
+  source_ranges = concat(
+    ["172.16.0.0/12"],
+    [for r in var.mgmt_ips : "${r.cidr}"],
+    [for r in var.gcp_ips : "${r.cidr}"],
+    [for r in var.tmp_ips : "${r.cidr}"],
+  )
+  allow {
+    protocol = "all"
+  }
+}
+resource "google_compute_firewall" "srv1-i" {
+  name      = "${var.name}-srv1-i"
+  network   = google_compute_network.srv1.id
+  direction = "INGRESS"
+  source_ranges = concat(
+    ["172.16.0.0/12"],
     [for r in var.mgmt_ips : "${r.cidr}"],
     [for r in var.gcp_ips : "${r.cidr}"],
     [for r in var.tmp_ips : "${r.cidr}"],
@@ -148,12 +175,23 @@ resource "google_compute_route" "srv1-dg" {
   priority     = 10
 }
 
-resource "google_compute_route" "net1-mgmt-exc" {
+
+resource "google_compute_route" "srv0-mgmt-exc" {
   for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
-  name             = "${var.name}-${each.key}"
-  description      = "mgmt traffic exceptions"
+  name             = "${var.name}-srv0-${each.key}"
+  description      = "srv0 traffic exceptions"
   dest_range       = each.value
-  network          = google_compute_network.internal.id
+  network          = google_compute_network.srv0.id
+  next_hop_gateway = "default-internet-gateway"
+  priority         = 10
+}
+
+resource "google_compute_route" "srv1-mgmt-exc" {
+  for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
+  name             = "${var.name}-srv1-${each.key}"
+  description      = "srv1 traffic exceptions"
+  dest_range       = each.value
+  network          = google_compute_network.srv1.id
   next_hop_gateway = "default-internet-gateway"
   priority         = 10
 }
