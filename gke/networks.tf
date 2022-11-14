@@ -15,12 +15,12 @@ resource "google_compute_address" "nat" {
 }
 
 resource "google_compute_router" "gke" {
-  name    = "${var.name}-rtr-data"
+  name    = "${var.name}"
   network = google_compute_network.gke.id
 }
 
 resource "google_compute_router_nat" "gke" {
-  name   = "${var.name}-rtr-nat"
+  name   = "${var.name}"
   router = google_compute_router.gke.name
 
   nat_ip_allocate_option = "MANUAL_ONLY"
