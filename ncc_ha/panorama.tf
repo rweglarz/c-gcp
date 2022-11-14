@@ -1,3 +1,19 @@
+resource "panos_device_group" "ncc" {
+  name = "gcp-ncc"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+resource "panos_device_group_parent" "ncc" {
+  device_group = panos_device_group.ncc.name
+  parent       = "gcp"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "panos_panorama_template" "ncc" {
   name = "gcp-ncc"
 }
@@ -195,4 +211,95 @@ resource "panos_zone" "ncc_private" {
     panos_panorama_ethernet_interface.ncc_eth1_2.name,
     panos_panorama_loopback_interface.ncc_lo2.name,
   ]
+}
+
+
+resource "panos_panorama_service_object" "ncc_ssh_22" {
+  device_group     = panos_device_group.ncc.name
+  name             = "ncc-ssh-22"
+  protocol         = "tcp"
+  destination_port = "22"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "panos_panorama_nat_rule_group" "ncc-pre-nat" {
+  device_group = panos_device_group.ncc.name
+  rule {
+    name = "default outbound snat"
+    original_packet {
+      source_zones          = [panos_zone.ncc_private.name]
+      destination_zone      = panos_zone.ncc_internet.name
+      source_addresses      = ["172.16.0.0/12"]
+      destination_addresses = ["any"]
+
+    }
+    translated_packet {
+      source {
+        dynamic_ip_and_port {
+          interface_address {
+            interface = panos_panorama_loopback_interface.ncc_lo1.name
+          }
+        }
+      }
+      destination {
+      }
+    }
+  }
+  rule {
+    name = "inbound srv0"
+    original_packet {
+      source_zones          = [panos_zone.ncc_internet.name]
+      destination_zone      = panos_zone.ncc_internet.name
+      source_addresses      = ["any"]
+      destination_addresses = [google_compute_forwarding_rule.ext.ip_address]
+      service               = panos_panorama_service_object.ncc_ssh_22.name
+    }
+    translated_packet {
+      source {
+      }
+      destination {
+        static_translation {
+          address = google_compute_instance.ncc-srv0.network_interface[0].network_ip
+        }
+      }
+    }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "panos_security_rule_group" "ncc-pre-sec" {
+  device_group = panos_device_group.ncc.name
+  rule {
+    name                  = "outbound"
+    source_zones          = [panos_zone.ncc_private.name]
+    source_addresses      = ["any"]
+    source_users          = ["any"]
+    destination_zones     = [panos_zone.ncc_internet.name]
+    destination_addresses = ["any"]
+    applications          = ["any"]
+    services              = ["application-default"]
+    categories            = ["any"]
+    action                = "allow"
+    log_setting           = var.log_forwarding
+  }
+  rule {
+    name                  = "inbound srv0"
+    source_zones          = [panos_zone.ncc_internet.name]
+    source_addresses      = [var.test_client_ip]
+    source_users          = ["any"]
+    destination_zones     = [panos_zone.ncc_private.name]
+    destination_addresses = [google_compute_forwarding_rule.ext.ip_address]
+    applications          = ["any"]
+    services              = [panos_panorama_service_object.ncc_ssh_22.name]
+    categories            = ["any"]
+    action                = "allow"
+    log_setting           = var.log_forwarding
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }

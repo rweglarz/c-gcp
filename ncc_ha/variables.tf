@@ -78,3 +78,13 @@ variable "dns_zone" {
   default = "w-gcp"
 }
 
+variable "test_client_ip" {
+  type = string
+}
+
+variable "log_forwarding" {
+ type = string
+ default = "panka"
+ description = "log forwarding profile from panorama"
+}
+
