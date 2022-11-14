@@ -9,6 +9,7 @@ resource "panos_panorama_template_stack" "ncc_fw0" {
     "vm-ha-ha2-eth1-3",
     "vm common",
   ]
+  description = "pat:acp"
 }
 resource "panos_panorama_template_stack" "ncc_fw1" {
   name         = "gcp-ncc-fw1"
@@ -18,6 +19,7 @@ resource "panos_panorama_template_stack" "ncc_fw1" {
     "vm-ha-ha2-eth1-3",
     "vm common",
   ]
+  description = "pat:acp"
 }
 
 resource "panos_panorama_template_variable" "ncc_fw0-peer_ip" {
