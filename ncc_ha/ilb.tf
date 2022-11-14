@@ -2,8 +2,8 @@ resource "google_compute_region_health_check" "fw" {
   name                = "${var.name}-rhealthcheck"
   check_interval_sec  = 1
   timeout_sec         = 1
-  healthy_threshold   = 3
-  unhealthy_threshold = 3
+  healthy_threshold   = 1
+  unhealthy_threshold = 1
 
   tcp_health_check {
     port = "443"
