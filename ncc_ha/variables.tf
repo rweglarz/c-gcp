@@ -21,7 +21,8 @@ variable "zone" {
 }
 
 variable "machine_type" {
-  type = string
+  type    = string
+  default = "n2-standard-4"
 }
 
 variable "mgmt_ips" {
