@@ -3,7 +3,7 @@ data "google_compute_image" "ubuntu" {
   project = "ubuntu-os-cloud"
 }
 
-resource "google_compute_instance" "ncc-srv0" {
+resource "google_compute_instance" "srv0" {
   name         = "${var.name}-srv0"
   machine_type = "f1-micro"
   zone         = var.zones[0]
@@ -23,7 +23,7 @@ resource "google_compute_instance" "ncc-srv0" {
   }
 }
 
-resource "google_compute_instance" "ncc-srv1" {
+resource "google_compute_instance" "srv1" {
   name         = "${var.name}-srv-1"
   machine_type = "f1-micro"
   zone         = var.zones[1]
