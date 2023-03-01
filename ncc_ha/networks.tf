@@ -206,6 +206,9 @@ resource "google_compute_network_peering" "srv0-internal" {
   name         = "${var.name}-srv0-internal"
   network      = google_compute_network.srv0.self_link
   peer_network = google_compute_network.internal.self_link
+  depends_on = [
+    google_compute_network_peering.internal-srv0
+  ]
 }
 resource "google_compute_network_peering" "internal-srv1" {
   name         = "${var.name}-internal-srv1"
@@ -216,4 +219,7 @@ resource "google_compute_network_peering" "srv1-internal" {
   name         = "${var.name}-srv1-internal"
   network      = google_compute_network.srv1.self_link
   peer_network = google_compute_network.internal.self_link
+  depends_on = [
+    google_compute_network_peering.internal-srv1
+  ]
 }
