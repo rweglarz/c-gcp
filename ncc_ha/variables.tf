@@ -28,6 +28,11 @@ variable "machine_type" {
   default = "n2-standard-4"
 }
 
+variable "fw_image" {
+  type    = string
+  default = "flex-byol-1019"
+}
+
 variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))
@@ -70,6 +75,20 @@ variable "tmp_ips" {
 
 variable "bootstrap_options" {
   type = map(map(string))
+  default = {
+    common = {
+      op-command-modes            = "mgmt-interface-swap"
+      serial-port-enable          = true
+      dhcp-accept-server-hostname = "yes"
+      #authcodes =
+      #ssh-keys = will override the key from ssh_key_path
+    }
+    fw0 = {
+    }
+    fw1 = {
+    }
+  }
+
 }
 
 variable "pl-mgmt-csp_nat_ips" {
@@ -92,3 +111,7 @@ variable "log_forwarding" {
  description = "log forwarding profile from panorama"
 }
 
+variable "ssh_key_path" {
+  type = string
+  default = ""
+}

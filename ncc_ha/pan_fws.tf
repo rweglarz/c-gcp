@@ -10,8 +10,9 @@ resource "google_compute_instance" "fw" {
 
   can_ip_forward = true
   metadata = merge(
+    var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
     var.bootstrap_options["common"],
-    var.bootstrap_options["fw_${count.index}"],
+    var.bootstrap_options["fw${count.index}"],
   )
 
 
@@ -27,7 +28,7 @@ resource "google_compute_instance" "fw" {
 
   boot_disk {
     initialize_params {
-      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1017"
+      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-${var.fw_image}"
     }
     auto_delete = true
   }
