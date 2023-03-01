@@ -15,9 +15,12 @@ variable "region" {
   type    = string
   default = "europe-west1"
 }
-variable "zone" {
-  type    = string
-  default = "europe-west1-b"
+variable "zones" {
+  type = list(string)
+  default = [
+    "europe-west1-b",
+    "europe-west1-c",
+  ]
 }
 
 variable "machine_type" {

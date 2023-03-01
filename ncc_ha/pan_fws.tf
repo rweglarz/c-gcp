@@ -6,7 +6,7 @@ resource "google_compute_instance" "fw" {
   count        = 2
   name         = "${var.name}-fw${count.index}-${random_id.server.hex}"
   machine_type = var.machine_type
-  zone         = var.zone
+  zone         = var.zones[count.index]
 
   can_ip_forward = true
   metadata = merge(
@@ -56,9 +56,10 @@ resource "google_compute_instance" "fw" {
 }
 
 resource "google_compute_instance_group" "fws" {
-  name      = "${var.name}-fw-ig"
-  instances = google_compute_instance.fw[*].self_link
-
+  count     = 2
+  name      = "${var.name}-fw${count.index}-ig"
+  instances = [google_compute_instance.fw[count.index].self_link]
+  zone      = var.zones[count.index]
 }
 
 

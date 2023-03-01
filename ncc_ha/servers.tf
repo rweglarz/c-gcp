@@ -6,6 +6,7 @@ data "google_compute_image" "ubuntu" {
 resource "google_compute_instance" "ncc-srv0" {
   name         = "${var.name}-srv0"
   machine_type = "f1-micro"
+  zone         = var.zones[0]
 
   boot_disk {
     initialize_params {
@@ -25,6 +26,7 @@ resource "google_compute_instance" "ncc-srv0" {
 resource "google_compute_instance" "ncc-srv1" {
   name         = "${var.name}-srv-1"
   machine_type = "f1-micro"
+  zone         = var.zones[1]
 
   boot_disk {
     initialize_params {
