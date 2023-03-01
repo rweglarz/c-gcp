@@ -9,7 +9,7 @@ variable "cidr" {
 }
 
 variable "project" {
-  type    = string
+  type = string
 }
 variable "region" {
   type    = string
@@ -36,6 +36,12 @@ variable "fw_image" {
 variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))
+  default = [
+    {
+      cidr        = "192.0.2.1/32"
+      description = "test-net"
+    }
+  ]
 }
 variable "gcp_ips" {
   type = list(map(string))
@@ -67,7 +73,7 @@ variable "tmp_ips" {
   type        = list(map(string))
   default = [
     {
-      cidr = "1.1.1.1"
+      cidr = "192.0.2.1/32"
       desc = "just to not have it empty"
     }
   ]
@@ -92,8 +98,8 @@ variable "bootstrap_options" {
 }
 
 variable "pl-mgmt-csp_nat_ips" {
-  type = string
-  default = "pl-029b5d80e69d9bc9e"
+  type    = string
+  description = "prefix list for aws sg"
 }
 
 variable "dns_zone" {
@@ -106,9 +112,9 @@ variable "test_client_ip" {
 }
 
 variable "log_forwarding" {
- type = string
- default = "panka"
- description = "log forwarding profile from panorama"
+  type        = string
+  default     = "panka"
+  description = "log forwarding profile from panorama"
 }
 
 variable "ssh_key_path" {

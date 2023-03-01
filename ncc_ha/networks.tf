@@ -85,7 +85,7 @@ resource "google_compute_firewall" "mgmt-i" {
   network   = google_compute_network.mgmt.id
   direction = "INGRESS"
   source_ranges = concat(
-    ["172.16.0.0/12"],
+    [var.cidr],
     [for r in var.mgmt_ips : "${r.cidr}"]
   )
   allow {
@@ -97,7 +97,7 @@ resource "google_compute_firewall" "internet-i" {
   network   = google_compute_network.internet.id
   direction = "INGRESS"
   source_ranges = concat(
-    ["172.16.0.0/12"],
+    [var.cidr],
     [for r in var.mgmt_ips : "${r.cidr}"],
     [for r in var.gcp_ips : "${r.cidr}"],
     [for r in var.tmp_ips : "${r.cidr}"],
@@ -111,7 +111,7 @@ resource "google_compute_firewall" "internal-i" {
   network   = google_compute_network.internal.id
   direction = "INGRESS"
   source_ranges = concat(
-    ["172.16.0.0/12"],
+    [var.cidr],
     [for r in var.gcp_ips : "${r.cidr}"],
     [for r in var.tmp_ips : "${r.cidr}"],
   )
@@ -124,7 +124,7 @@ resource "google_compute_firewall" "srv0-i" {
   network   = google_compute_network.srv0.id
   direction = "INGRESS"
   source_ranges = concat(
-    ["172.16.0.0/12"],
+    [var.cidr],
     [for r in var.mgmt_ips : "${r.cidr}"],
     [for r in var.gcp_ips : "${r.cidr}"],
     [for r in var.tmp_ips : "${r.cidr}"],
@@ -138,7 +138,7 @@ resource "google_compute_firewall" "srv1-i" {
   network   = google_compute_network.srv1.id
   direction = "INGRESS"
   source_ranges = concat(
-    ["172.16.0.0/12"],
+    [var.cidr],
     [for r in var.mgmt_ips : "${r.cidr}"],
     [for r in var.gcp_ips : "${r.cidr}"],
     [for r in var.tmp_ips : "${r.cidr}"],
@@ -214,6 +214,9 @@ resource "google_compute_network_peering" "internal-srv1" {
   name         = "${var.name}-internal-srv1"
   network      = google_compute_network.internal.self_link
   peer_network = google_compute_network.srv1.self_link
+  depends_on = [
+    google_compute_network_peering.srv0-internal
+  ]
 }
 resource "google_compute_network_peering" "srv1-internal" {
   name         = "${var.name}-srv1-internal"
