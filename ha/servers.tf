@@ -8,6 +8,10 @@ resource "google_compute_instance" "srv0" {
   machine_type = "f1-micro"
   zone         = var.zones[0]
 
+  metadata = merge(
+    var.ssh_key_path != "" ? { ssh-keys = "ubuntu:${file(var.ssh_key_path)}" } : {},
+  )
+
   boot_disk {
     initialize_params {
       image = data.google_compute_image.ubuntu.self_link
@@ -27,6 +31,10 @@ resource "google_compute_instance" "srv1" {
   name         = "${var.name}-srv-1"
   machine_type = "f1-micro"
   zone         = var.zones[1]
+
+  metadata = merge(
+    var.ssh_key_path != "" ? { ssh-keys = "ubuntu:${file(var.ssh_key_path)}" } : {},
+  )
 
   boot_disk {
     initialize_params {
