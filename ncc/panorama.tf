@@ -45,7 +45,7 @@ module "cfg_fwp" {
 }
 
 resource "panos_panorama_template_stack" "fwp" {
-  for_each = var.networks["mgmt"]
+  for_each     = var.networks["mgmt"]
   name         = "gcp-ncc-fwp-${each.key}"
   default_vsys = "vsys1"
   templates = [
@@ -55,3 +55,53 @@ resource "panos_panorama_template_stack" "fwp" {
   description = "pat:acp"
 }
 
+
+resource "panos_panorama_bgp" "fwp" {
+  for_each       = var.networks["mgmt"]
+  template       = module.cfg_fwp[each.key].template_name
+  virtual_router = "vr1"
+  install_route  = true
+
+  router_id = local.private_ips.fwp[each.key].eth1_2_ip
+  as_number = var.asn["fw"]
+}
+
+resource "panos_panorama_bgp_peer_group" "ncc" {
+  for_each        = var.networks["mgmt"]
+  template        = module.cfg_fwp[each.key].template_name
+  virtual_router  = "vr1"
+  name            = "ncc"
+  type            = "ebgp"
+  export_next_hop = "use-self"
+  depends_on = [
+    panos_panorama_bgp.fwp
+  ]
+}
+
+resource "panos_panorama_bgp_peer" "ncc_p" {
+  for_each                = var.networks["mgmt"]
+  template                = module.cfg_fwp[each.key].template_name
+  name                    = "ncc_p"
+  virtual_router          = "vr1"
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc[each.key].name
+  peer_as                 = var.asn["ncc"]
+  local_address_interface = "ethernet1/2"
+  local_address_ip        = format("%s/%s", local.private_ips.fwp[each.key].eth1_2_ip, local.subnet_prefix_length)
+  peer_address_ip         = local.private_ips.cr_int[each.key].intf_p_ip
+  max_prefixes            = "unlimited"
+  multi_hop               = 1
+}
+
+resource "panos_panorama_bgp_peer" "ncc_r" {
+  for_each                = var.networks["mgmt"]
+  template                = module.cfg_fwp[each.key].template_name
+  name                    = "ncc_r"
+  virtual_router          = "vr1"
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc[each.key].name
+  peer_as                 = var.asn["ncc"]
+  local_address_interface = "ethernet1/2"
+  local_address_ip        = format("%s/%s", local.private_ips.fwp[each.key].eth1_2_ip, local.subnet_prefix_length)
+  peer_address_ip         = local.private_ips.cr_int[each.key].intf_r_ip
+  max_prefixes            = "unlimited"
+  multi_hop               = 1
+}

@@ -13,7 +13,7 @@ variable "project" {
 }
 
 variable "region" {
-  type = string
+  type    = string
   default = "europe-west1"
 }
 
@@ -144,4 +144,11 @@ variable "log_forwarding" {
 variable "ssh_key_path" {
   type    = string
   default = ""
+}
+
+variable "asn" {
+  default = {
+    ncc = "65501"
+    fw  = "65002"
+  }
 }
