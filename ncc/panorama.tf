@@ -64,6 +64,8 @@ resource "panos_panorama_bgp" "fwp" {
 
   router_id = local.private_ips.fwp[each.key].eth1_2_ip
   as_number = var.asn["fw"]
+
+  allow_redistribute_default_route = true
 }
 
 resource "panos_panorama_bgp_peer_group" "ncc" {
@@ -104,4 +106,14 @@ resource "panos_panorama_bgp_peer" "ncc_r" {
   peer_address_ip         = local.private_ips.cr_int[each.key].intf_r_ip
   max_prefixes            = "unlimited"
   multi_hop               = 1
+}
+
+resource "panos_panorama_bgp_redist_rule" "ncc" {
+  for_each       = var.networks["mgmt"]
+  template       = module.cfg_fwp[each.key].template_name
+  virtual_router = "vr1"
+  route_table    = "unicast"
+  name           = "0.0.0.0/0"
+
+  lifecycle { create_before_destroy = true }
 }

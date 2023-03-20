@@ -187,30 +187,35 @@ resource "google_compute_route" "srv1-mgmt-exc" {
 
 
 resource "google_compute_network_peering" "internal-srv0" {
-  name         = "${var.name}-internal-srv0"
-  network      = google_compute_network.internal.self_link
-  peer_network = google_compute_network.srv0.self_link
+  name                 = "${var.name}-internal-srv0"
+  network              = google_compute_network.internal.self_link
+  peer_network         = google_compute_network.srv0.self_link
+  export_custom_routes = true
 }
 resource "google_compute_network_peering" "srv0-internal" {
-  name         = "${var.name}-srv0-internal"
-  network      = google_compute_network.srv0.self_link
-  peer_network = google_compute_network.internal.self_link
+  name                 = "${var.name}-srv0-internal"
+  network              = google_compute_network.srv0.self_link
+  peer_network         = google_compute_network.internal.self_link
+  import_custom_routes = true
+
   depends_on = [
     google_compute_network_peering.internal-srv0
   ]
 }
 resource "google_compute_network_peering" "internal-srv1" {
-  name         = "${var.name}-internal-srv1"
-  network      = google_compute_network.internal.self_link
-  peer_network = google_compute_network.srv1.self_link
+  name                 = "${var.name}-internal-srv1"
+  network              = google_compute_network.internal.self_link
+  peer_network         = google_compute_network.srv1.self_link
+  export_custom_routes = true
   depends_on = [
     google_compute_network_peering.srv0-internal
   ]
 }
 resource "google_compute_network_peering" "srv1-internal" {
-  name         = "${var.name}-srv1-internal"
-  network      = google_compute_network.srv1.self_link
-  peer_network = google_compute_network.internal.self_link
+  name                 = "${var.name}-srv1-internal"
+  network              = google_compute_network.srv1.self_link
+  peer_network         = google_compute_network.internal.self_link
+  import_custom_routes = true
   depends_on = [
     google_compute_network_peering.internal-srv1
   ]
