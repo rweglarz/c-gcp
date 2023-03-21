@@ -11,7 +11,7 @@ resource "google_compute_network" "internet" {
 }
 
 resource "google_compute_network" "internal" {
-  name                    = "${var.name}-inernal"
+  name                    = "${var.name}-internal"
   auto_create_subnetworks = "false"
   routing_mode            = var.routing_mode
 }
