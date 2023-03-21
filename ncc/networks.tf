@@ -44,27 +44,32 @@ resource "google_compute_subnetwork" "internal" {
 resource "google_compute_network" "srv0" {
   name                    = "${var.name}-srv0"
   auto_create_subnetworks = "false"
-  routing_mode            = var.routing_mode
+
+  routing_mode                    = var.routing_mode
+  delete_default_routes_on_create = true
 }
-resource "google_compute_subnetwork" "srv0-s0" {
-  name          = "${var.name}-srv0-s0"
-  ip_cidr_range = cidrsubnet(var.cidr, 4, 4)
+resource "google_compute_subnetwork" "srv0" {
+  for_each      = var.networks["srv0"]
+  name          = "${var.name}-srv0-${each.key}"
+  region        = each.key
+  ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
   network       = google_compute_network.srv0.id
 }
 
 resource "google_compute_network" "srv1" {
   name                    = "${var.name}-srv1"
   auto_create_subnetworks = "false"
-  routing_mode            = var.routing_mode
+
+  routing_mode                    = var.routing_mode
+  delete_default_routes_on_create = true
 }
 
-resource "google_compute_subnetwork" "srv1-s0" {
-  name          = "${var.name}-srv1-s0"
-  ip_cidr_range = cidrsubnet(var.cidr, 4, 5)
+resource "google_compute_subnetwork" "srv1" {
+  for_each      = var.networks["srv1"]
+  name          = "${var.name}-srv1-${each.key}"
+  region        = each.key
+  ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
   network       = google_compute_network.srv1.id
-
-  stack_type       = "IPV4_IPV6"
-  ipv6_access_type = "EXTERNAL"
 }
 
 

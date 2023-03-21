@@ -44,6 +44,22 @@ variable "networks" {
         idx = 5
       }
     }
+    srv0 = {
+      europe-west1 = {
+        idx = 6
+      }
+      europe-west2 = {
+        idx = 7
+      }
+    }
+    srv1 = {
+      europe-west1 = {
+        idx = 8
+      }
+      europe-west2 = {
+        idx = 9
+      }
+    }
   }
 }
 
