@@ -152,3 +152,7 @@ variable "asn" {
     fw  = "65002"
   }
 }
+
+variable "routing_mode" {
+  default = "GLOBAL"
+}

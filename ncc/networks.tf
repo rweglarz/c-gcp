@@ -13,7 +13,7 @@ resource "google_compute_network" "internet" {
 resource "google_compute_network" "internal" {
   name                    = "${var.name}-inernal"
   auto_create_subnetworks = "false"
-  #routing_mode  = "REGIONAL"
+  routing_mode            = var.routing_mode
 }
 
 resource "google_compute_subnetwork" "mgmt" {
@@ -44,6 +44,7 @@ resource "google_compute_subnetwork" "internal" {
 resource "google_compute_network" "srv0" {
   name                    = "${var.name}-srv0"
   auto_create_subnetworks = "false"
+  routing_mode            = var.routing_mode
 }
 resource "google_compute_subnetwork" "srv0-s0" {
   name          = "${var.name}-srv0-s0"
@@ -54,6 +55,7 @@ resource "google_compute_subnetwork" "srv0-s0" {
 resource "google_compute_network" "srv1" {
   name                    = "${var.name}-srv1"
   auto_create_subnetworks = "false"
+  routing_mode            = var.routing_mode
 }
 
 resource "google_compute_subnetwork" "srv1-s0" {
