@@ -117,3 +117,28 @@ resource "panos_panorama_bgp_redist_rule" "ncc" {
 
   lifecycle { create_before_destroy = true }
 }
+
+resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
+  device_group = panos_device_group.ncc.name
+  rule {
+    name = "default outbound snat"
+    original_packet {
+      source_zones          = ["internal"]
+      destination_zone      = "internet"
+      source_addresses      = ["172.16.0.0/12"]
+      destination_addresses = ["any"]
+
+    }
+    translated_packet {
+      source {
+        dynamic_ip_and_port {
+          interface_address {
+            interface = "ethernet1/1"
+          }
+        }
+      }
+      destination {
+      }
+    }
+  }
+}
