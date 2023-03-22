@@ -66,6 +66,7 @@ resource "panos_panorama_bgp" "fwp" {
   as_number = var.asn["fw"]
 
   allow_redistribute_default_route = true
+  lifecycle { create_before_destroy = true }
 }
 
 resource "panos_panorama_bgp_peer_group" "ncc" {
@@ -78,6 +79,7 @@ resource "panos_panorama_bgp_peer_group" "ncc" {
   depends_on = [
     panos_panorama_bgp.fwp
   ]
+  lifecycle { create_before_destroy = true }
 }
 
 resource "panos_panorama_bgp_peer" "ncc_p" {
@@ -92,6 +94,7 @@ resource "panos_panorama_bgp_peer" "ncc_p" {
   peer_address_ip         = local.private_ips.cr_int[each.key].intf_p_ip
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  lifecycle { create_before_destroy = true }
 }
 
 resource "panos_panorama_bgp_peer" "ncc_r" {
@@ -106,6 +109,7 @@ resource "panos_panorama_bgp_peer" "ncc_r" {
   peer_address_ip         = local.private_ips.cr_int[each.key].intf_r_ip
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  lifecycle { create_before_destroy = true }
 }
 
 resource "panos_panorama_bgp_redist_rule" "ncc" {
@@ -115,6 +119,9 @@ resource "panos_panorama_bgp_redist_rule" "ncc" {
   route_table    = "unicast"
   name           = "0.0.0.0/0"
 
+  depends_on = [
+    panos_panorama_bgp.fwp
+  ]
   lifecycle { create_before_destroy = true }
 }
 
