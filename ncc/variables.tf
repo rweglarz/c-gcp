@@ -25,39 +25,39 @@ variable "networks" {
         idx = 0
       }
       europe-west2 = {
-        idx = 1
+        idx = 16
       }
     }
     internet = {
       europe-west1 = {
-        idx = 2
+        idx = 1
       }
       europe-west2 = {
-        idx = 3
+        idx = 17
       }
     }
     internal = {
       europe-west1 = {
-        idx = 4
+        idx = 2
       }
       europe-west2 = {
-        idx = 5
+        idx = 18
       }
     }
     srv0 = {
       europe-west1 = {
-        idx = 6
+        idx = 3
       }
       europe-west2 = {
-        idx = 7
+        idx = 19
       }
     }
     srv1 = {
       europe-west1 = {
-        idx = 8
+        idx = 4
       }
       europe-west2 = {
-        idx = 9
+        idx = 20
       }
     }
   }
