@@ -13,6 +13,10 @@ resource "google_network_connectivity_spoke" "this" {
       virtual_machine = google_compute_instance.fwp[each.key].self_link
       ip_address      = google_compute_instance.fwp[each.key].network_interface[2].network_ip
     }
+    instances {
+      virtual_machine = google_compute_instance.fws[each.key].self_link
+      ip_address      = google_compute_instance.fws[each.key].network_interface[2].network_ip
+    }
     site_to_site_data_transfer = false
   }
 }
@@ -55,9 +59,9 @@ resource "google_compute_router_interface" "internal_intf_p" {
   redundant_interface = google_compute_router_interface.internal_intf_r[each.key].name
 }
 
-resource "google_compute_router_peer" "internal_p" {
+resource "google_compute_router_peer" "internal_p_fwp" {
   for_each                  = google_compute_instance.fwp
-  name                      = "p-${each.key}"
+  name                      = "p-${each.key}-fwp"
   router                    = google_compute_router.internal[each.key].name
   region                    = each.key
   interface                 = google_compute_router_interface.internal_intf_p[each.key].name
@@ -66,14 +70,37 @@ resource "google_compute_router_peer" "internal_p" {
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_2_ip
 }
 
-resource "google_compute_router_peer" "internal_r" {
+resource "google_compute_router_peer" "internal_r_fwp" {
   for_each                  = google_compute_instance.fwp
-  name                      = "r-${each.key}"
+  name                      = "r-${each.key}-fwp"
   router                    = google_compute_router.internal[each.key].name
   region                    = each.key
   interface                 = google_compute_router_interface.internal_intf_r[each.key].name
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fwp[each.key].self_link
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_2_ip
+}
+
+
+resource "google_compute_router_peer" "internal_p_fws" {
+  for_each                  = google_compute_instance.fws
+  name                      = "p-${each.key}-fws"
+  router                    = google_compute_router.internal[each.key].name
+  region                    = each.key
+  interface                 = google_compute_router_interface.internal_intf_p[each.key].name
+  peer_asn                  = var.asn.fw
+  router_appliance_instance = google_compute_instance.fws[each.key].self_link
+  peer_ip_address           = local.private_ips.fws[each.key].eth1_2_ip
+}
+
+resource "google_compute_router_peer" "internal_r_fws" {
+  for_each                  = google_compute_instance.fws
+  name                      = "r-${each.key}-fws"
+  router                    = google_compute_router.internal[each.key].name
+  region                    = each.key
+  interface                 = google_compute_router_interface.internal_intf_r[each.key].name
+  peer_asn                  = var.asn.fw
+  router_appliance_instance = google_compute_instance.fws[each.key].self_link
+  peer_ip_address           = local.private_ips.fws[each.key].eth1_2_ip
 }
 

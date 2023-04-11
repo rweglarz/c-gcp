@@ -16,6 +16,12 @@ resource "google_compute_network" "internal" {
   routing_mode            = var.routing_mode
 }
 
+resource "google_compute_network" "ha" {
+  name                    = "${var.name}-ha"
+  auto_create_subnetworks = "false"
+  routing_mode            = var.routing_mode
+}
+
 resource "google_compute_subnetwork" "mgmt" {
   for_each      = var.networks["mgmt"]
   name          = "${var.name}-mgmt-${each.key}"
@@ -38,6 +44,14 @@ resource "google_compute_subnetwork" "internal" {
   region        = each.key
   ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
   network       = google_compute_network.internal.id
+}
+
+resource "google_compute_subnetwork" "ha" {
+  for_each      = var.networks["ha"]
+  name          = "${var.name}-ha-${each.key}"
+  region        = each.key
+  ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
+  network       = google_compute_network.ha.id
 }
 
 

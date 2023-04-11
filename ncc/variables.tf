@@ -44,7 +44,7 @@ variable "networks" {
         idx = 18
       }
     }
-    srv0 = {
+    ha = {
       europe-west1 = {
         idx = 3
       }
@@ -52,12 +52,20 @@ variable "networks" {
         idx = 19
       }
     }
-    srv1 = {
+    srv0 = {
       europe-west1 = {
         idx = 4
       }
       europe-west2 = {
         idx = 20
+      }
+    }
+    srv1 = {
+      europe-west1 = {
+        idx = 5
+      }
+      europe-west2 = {
+        idx = 21
       }
     }
   }
@@ -171,4 +179,11 @@ variable "asn" {
 
 variable "routing_mode" {
   default = "GLOBAL"
+}
+
+variable "global_services" {
+  default = {
+    s1 = "8081",
+    s2 = "8082",
+  }
 }
