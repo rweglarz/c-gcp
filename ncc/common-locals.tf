@@ -10,6 +10,7 @@ locals {
       eth1_2_ip = cidrhost(google_compute_subnetwork.internal[r].ip_cidr_range, 5)
       eth1_2_gw = cidrhost(google_compute_subnetwork.internal[r].ip_cidr_range, 1)
       eth1_3_ip = cidrhost(google_compute_subnetwork.ha[r].ip_cidr_range, 5)
+      eth1_3_gw = cidrhost(google_compute_subnetwork.ha[r].ip_cidr_range, 1)
       }
     }
     fws = { for r,v in var.networks.mgmt : r => {
@@ -19,6 +20,7 @@ locals {
       eth1_2_ip = cidrhost(google_compute_subnetwork.internal[r].ip_cidr_range, 6)
       eth1_2_gw = cidrhost(google_compute_subnetwork.internal[r].ip_cidr_range, 1)
       eth1_3_ip = cidrhost(google_compute_subnetwork.ha[r].ip_cidr_range, 6)
+      eth1_3_gw = cidrhost(google_compute_subnetwork.ha[r].ip_cidr_range, 1)
       }
     }
     cr_int = { for r, v in var.networks.internal : r => {
