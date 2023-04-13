@@ -248,15 +248,19 @@ resource "google_compute_network_peering" "srv1-internal" {
 
 
 resource "google_compute_router" "internet" {
-  name    = "${var.name}-rtr-internet"
-  network = google_compute_network.internet.id
+  for_each = var.networks["internet"]
+  name     = "${var.name}-rtr-internet-snat-${each.key}"
+  network  = google_compute_network.internet.id
+  region   = each.key
 }
 
 resource "google_compute_router_nat" "internet_nat" {
-  name   = "${var.name}-rtr-internet-snat"
-  router = google_compute_router.internet.name
+  for_each = var.networks["internet"]
+  name     = "${var.name}-rtr-internet-snat-${each.key}"
+  router   = google_compute_router.internet[each.key].name
+  region   = each.key
 
-  nat_ip_allocate_option = "AUTO_ONLY"
+  nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   log_config {
     enable = true
