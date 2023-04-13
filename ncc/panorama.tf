@@ -63,7 +63,7 @@ resource "panos_panorama_bgp" "ncc" {
   virtual_router = "vr1"
   install_route  = true
 
-  router_id = local.private_ips.fwp[each.key].eth1_2_ip
+  router_id = "$eth1_2-ip"
   as_number = var.asn["fw"]
 
   allow_redistribute_default_route = true
