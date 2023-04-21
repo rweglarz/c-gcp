@@ -55,35 +55,35 @@ resource "google_compute_subnetwork" "ha" {
 }
 
 
-resource "google_compute_network" "srv0" {
-  name                    = "${var.name}-srv0"
+resource "google_compute_network" "srv_app0" {
+  name                    = "${var.name}-srv-app0"
   auto_create_subnetworks = "false"
 
   routing_mode                    = var.routing_mode
   delete_default_routes_on_create = true
 }
-resource "google_compute_subnetwork" "srv0" {
-  for_each      = var.networks["srv0"]
-  name          = "${var.name}-srv0-${each.key}"
+resource "google_compute_subnetwork" "srv_app0" {
+  for_each      = var.networks["srv_app0"]
+  name          = "${var.name}-srv-app0-${each.key}"
   region        = each.key
   ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
-  network       = google_compute_network.srv0.id
+  network       = google_compute_network.srv_app0.id
 }
 
-resource "google_compute_network" "srv1" {
-  name                    = "${var.name}-srv1"
+resource "google_compute_network" "srv_app1" {
+  name                    = "${var.name}-srv-app1"
   auto_create_subnetworks = "false"
 
   routing_mode                    = var.routing_mode
   delete_default_routes_on_create = true
 }
 
-resource "google_compute_subnetwork" "srv1" {
-  for_each      = var.networks["srv1"]
-  name          = "${var.name}-srv1-${each.key}"
+resource "google_compute_subnetwork" "srv_app1" {
+  for_each      = var.networks["srv_app1"]
+  name          = "${var.name}-srv-app1-${each.key}"
   region        = each.key
   ip_cidr_range = cidrsubnet(var.cidr, 5, each.value.idx)
-  network       = google_compute_network.srv1.id
+  network       = google_compute_network.srv_app1.id
 }
 
 
@@ -129,9 +129,9 @@ resource "google_compute_firewall" "internal-i" {
     protocol = "all"
   }
 }
-resource "google_compute_firewall" "srv0-i" {
-  name      = "${var.name}-srv0-i"
-  network   = google_compute_network.srv0.id
+resource "google_compute_firewall" "srv_app0-i" {
+  name      = "${var.name}-srv-app0-i"
+  network   = google_compute_network.srv_app0.id
   direction = "INGRESS"
   source_ranges = concat(
     [var.cidr],
@@ -143,9 +143,9 @@ resource "google_compute_firewall" "srv0-i" {
     protocol = "all"
   }
 }
-resource "google_compute_firewall" "srv1-i" {
-  name      = "${var.name}-srv1-i"
-  network   = google_compute_network.srv1.id
+resource "google_compute_firewall" "srv_app1-i" {
+  name      = "${var.name}-srv-app1-i"
+  network   = google_compute_network.srv_app1.id
   direction = "INGRESS"
   source_ranges = concat(
     [var.cidr],
@@ -188,82 +188,60 @@ resource "google_compute_firewall" "mgmt-i-tmp" {
 
 resource "google_compute_route" "srv0-mgmt-exc" {
   for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
-  name             = "${var.name}-srv0-${each.key}"
+  name             = "${var.name}-srv-app0-${each.key}"
   description      = "srv0 traffic exceptions"
   dest_range       = each.value
-  network          = google_compute_network.srv0.id
+  network          = google_compute_network.srv_app0.id
   next_hop_gateway = "default-internet-gateway"
   priority         = 10
 }
 
 resource "google_compute_route" "srv1-mgmt-exc" {
   for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
-  name             = "${var.name}-srv1-${each.key}"
+  name             = "${var.name}-srv-app1-${each.key}"
   description      = "srv1 traffic exceptions"
   dest_range       = each.value
-  network          = google_compute_network.srv1.id
+  network          = google_compute_network.srv_app1.id
   next_hop_gateway = "default-internet-gateway"
   priority         = 10
 }
 
 
-resource "google_compute_network_peering" "internal-srv0" {
-  name                 = "${var.name}-internal-srv0"
+resource "google_compute_network_peering" "internal-srv_app0" {
+  name                 = "${var.name}-internal-srv-app0"
   network              = google_compute_network.internal.self_link
-  peer_network         = google_compute_network.srv0.self_link
+  peer_network         = google_compute_network.srv_app0.self_link
   export_custom_routes = true
   depends_on = [
     google_compute_route.srv0-mgmt-exc,
   ]
 }
-resource "google_compute_network_peering" "srv0-internal" {
-  name                 = "${var.name}-srv0-internal"
-  network              = google_compute_network.srv0.self_link
+resource "google_compute_network_peering" "srv_app0-internal" {
+  name                 = "${var.name}-srv-app0-internal"
+  network              = google_compute_network.srv_app0.self_link
   peer_network         = google_compute_network.internal.self_link
   import_custom_routes = true
 
   depends_on = [
-    google_compute_network_peering.internal-srv0
+    google_compute_network_peering.internal-srv_app0
   ]
 }
-resource "google_compute_network_peering" "internal-srv1" {
-  name                 = "${var.name}-internal-srv1"
+resource "google_compute_network_peering" "internal-srv_app1" {
+  name                 = "${var.name}-internal-srv-app1"
   network              = google_compute_network.internal.self_link
-  peer_network         = google_compute_network.srv1.self_link
+  peer_network         = google_compute_network.srv_app1.self_link
   export_custom_routes = true
   depends_on = [
     google_compute_route.srv1-mgmt-exc,
-    google_compute_network_peering.srv0-internal,
+    google_compute_network_peering.srv_app0-internal,
   ]
 }
-resource "google_compute_network_peering" "srv1-internal" {
-  name                 = "${var.name}-srv1-internal"
-  network              = google_compute_network.srv1.self_link
+resource "google_compute_network_peering" "srv_app1-internal" {
+  name                 = "${var.name}-srv-app1-internal"
+  network              = google_compute_network.srv_app1.self_link
   peer_network         = google_compute_network.internal.self_link
   import_custom_routes = true
   depends_on = [
-    google_compute_network_peering.internal-srv1
+    google_compute_network_peering.internal-srv_app1
   ]
-}
-
-
-resource "google_compute_router" "internet" {
-  for_each = var.networks["internet"]
-  name     = "${var.name}-rtr-internet-snat-${each.key}"
-  network  = google_compute_network.internet.id
-  region   = each.key
-}
-
-resource "google_compute_router_nat" "internet_nat" {
-  for_each = var.networks["internet"]
-  name     = "${var.name}-rtr-internet-snat-${each.key}"
-  router   = google_compute_router.internet[each.key].name
-  region   = each.key
-
-  nat_ip_allocate_option             = "AUTO_ONLY"
-  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-  log_config {
-    enable = true
-    filter = "ERRORS_ONLY"
-  }
 }

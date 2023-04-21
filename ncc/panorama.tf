@@ -1,3 +1,10 @@
+resource "panos_device_group" "ncc_r" {
+  for_each = var.networks["mgmt"]
+  name     = "gcp-ncc-${each.key}"
+
+  lifecycle { create_before_destroy = true }
+}
+
 resource "panos_device_group" "ncc" {
   name = "gcp-ncc"
 
@@ -11,12 +18,20 @@ resource "panos_device_group_parent" "ncc" {
   lifecycle { create_before_destroy = true }
 }
 
+resource "panos_device_group_parent" "ncc_r" {
+  for_each     = var.networks["mgmt"]
+  device_group = panos_device_group.ncc_r[each.key].name
+  parent       = "gcp-ncc"
+
+  lifecycle { create_before_destroy = true }
+}
+
 resource "panos_panorama_template" "ncc" {
   name = "gcp-ncc-routing"
 }
 
 module "cfg_ncc" {
-  source   = "../../ce-common/modules/pan_vm_template"
+  source = "../../ce-common/modules/pan_vm_template"
 
   name = "gcp-ncc-routing"
 
@@ -51,8 +66,8 @@ module "cfg_ncc" {
     "eth1_2-gw"  = "192.0.2.1"
     "eth1_2-ip"  = "192.0.2.2"
     "eth1_2-ipm" = "192.0.2.2/32"
-    "ncc_p-ip" = "192.0.2.3"
-    "ncc_r-ip" = "192.0.2.4"
+    "ncc_p-ip"   = "192.0.2.3"
+    "ncc_r-ip"   = "192.0.2.4"
   }
   enable_ecmp = false
 }
@@ -71,7 +86,7 @@ resource "panos_panorama_bgp" "ncc" {
 }
 
 resource "panos_panorama_bgp_peer_group" "ncc" {
-  template       = module.cfg_ncc.template_name
+  template        = module.cfg_ncc.template_name
   virtual_router  = "vr1"
   name            = "ncc"
   type            = "ebgp"
@@ -83,7 +98,7 @@ resource "panos_panorama_bgp_peer_group" "ncc" {
 }
 
 resource "panos_panorama_bgp_peer" "ncc_p" {
-  template       = module.cfg_ncc.template_name
+  template                = module.cfg_ncc.template_name
   name                    = "ncc_p"
   virtual_router          = "vr1"
   bgp_peer_group          = panos_panorama_bgp_peer_group.ncc.name
@@ -97,7 +112,7 @@ resource "panos_panorama_bgp_peer" "ncc_p" {
 }
 
 resource "panos_panorama_bgp_peer" "ncc_r" {
-  template       = module.cfg_ncc.template_name
+  template                = module.cfg_ncc.template_name
   name                    = "ncc_r"
   virtual_router          = "vr1"
   bgp_peer_group          = panos_panorama_bgp_peer_group.ncc.name
@@ -124,8 +139,8 @@ resource "panos_panorama_bgp_redist_rule" "ncc" {
 
 
 resource "panos_panorama_service_object" "s" {
-  for_each = var.global_services
-  device_group = panos_device_group.ncc.name
+  for_each         = var.global_services
+  device_group     = panos_device_group.ncc.name
   name             = "tcp-${each.key}"
   protocol         = "tcp"
   destination_port = each.value
@@ -159,9 +174,9 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
   }
   rule {
     name = "inbound s1"
-    description        = format("pub:%s to %s",  
+    description = format("pub:%s to %s",
       google_compute_global_forwarding_rule.ext["s1"].ip_address,
-       panos_panorama_service_object.s["s1"].destination_port
+      panos_panorama_service_object.s["s1"].destination_port
     )
     original_packet {
       source_zones          = ["internet"]
@@ -180,17 +195,17 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
       }
       destination {
         dynamic_translation {
-          address = google_compute_instance.srv0["europe-west1"].network_interface[0].network_ip
-          port = "80"
+          address = google_compute_instance.srv_app0["europe-west1"].network_interface[0].network_ip
+          port    = "80"
         }
       }
     }
   }
   rule {
     name = "inbound s2"
-    description        = format("pub:%s to %s",  
+    description = format("pub:%s to %s",
       google_compute_global_forwarding_rule.ext["s2"].ip_address,
-       panos_panorama_service_object.s["s2"].destination_port
+      panos_panorama_service_object.s["s2"].destination_port
     )
     original_packet {
       source_zones          = ["internet"]
@@ -209,8 +224,8 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
       }
       destination {
         dynamic_translation {
-          address = google_compute_instance.srv1["europe-west1"].network_interface[0].network_ip
-          port = "80"
+          address = google_compute_instance.srv_app0["europe-west2"].network_interface[0].network_ip
+          port    = "80"
         }
       }
     }

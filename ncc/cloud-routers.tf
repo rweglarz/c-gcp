@@ -104,3 +104,19 @@ resource "google_compute_router_peer" "internal_r_fws" {
   peer_ip_address           = local.private_ips.fws[each.key].eth1_2_ip
 }
 
+
+
+
+resource "google_compute_router_nat" "internet_nat" {
+  for_each = var.networks["internet"]
+  name     = "${var.name}-rtr-internet-snat-${each.key}"
+  router   = google_compute_router.internet[each.key].name
+  region   = each.key
+
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}

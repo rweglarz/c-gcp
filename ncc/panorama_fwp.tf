@@ -36,11 +36,11 @@ locals {
 }
 
 resource "panos_panorama_template_variable" "fwp" {
-  for_each     = { for e in local.fwp_variable_map: e.k => e }
+  for_each = { for e in local.fwp_variable_map : e.k => e }
 
   template_stack = each.value.ts
-  name     = "${"$"}${each.value.name}"
-  type     = "ip-netmask"
-  value    = each.value.value
+  name           = "${"$"}${each.value.name}"
+  type           = "ip-netmask"
+  value          = each.value.value
 }
 

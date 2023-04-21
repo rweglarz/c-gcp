@@ -52,7 +52,7 @@ variable "networks" {
         idx = 19
       }
     }
-    srv0 = {
+    srv_app0 = {
       europe-west1 = {
         idx = 4
       }
@@ -60,7 +60,7 @@ variable "networks" {
         idx = 20
       }
     }
-    srv1 = {
+    srv_app1 = {
       europe-west1 = {
         idx = 5
       }
