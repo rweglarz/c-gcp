@@ -2,6 +2,10 @@ locals {
   subnet_prefix_length = 28
   bootstrap_options = {
   }
+  local_vpcs = {
+    "europe-west1" = cidrsubnet(var.cidr, 1, 0)
+    "europe-west2" = cidrsubnet(var.cidr, 1, 1)
+  }
   private_ips = {
     fwp = { for r,v in var.networks.mgmt : r => {
       mgmt_ip   = cidrhost(google_compute_subnetwork.mgmt[r].ip_cidr_range, 5)

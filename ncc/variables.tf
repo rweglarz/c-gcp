@@ -182,6 +182,10 @@ variable "routing_mode" {
   default = "GLOBAL"
 }
 
+variable "bgp_keep_alive_interval" {
+  default = 30
+}
+
 variable "global_services" {
   default = {
     s1 = "8081",

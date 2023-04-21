@@ -31,10 +31,13 @@ resource "google_compute_router" "internal" {
     advertise_mode    = "CUSTOM"
     advertised_groups = ["ALL_SUBNETS"]
     advertised_ip_ranges {
-      range = "10.0.0.1"
+      range = cidrsubnet(var.cidr, 1, 0)
     }
     advertised_ip_ranges {
-      range = "10.0.1.0/24"
+      range = cidrsubnet(var.cidr, 1, 1)
+    }
+    advertised_ip_ranges {
+      range = "172.16.0.0/12"
     }
   }
 }

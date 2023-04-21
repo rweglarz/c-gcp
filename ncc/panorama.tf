@@ -70,6 +70,7 @@ module "cfg_ncc" {
     "cr_internal_r-ip" = "192.0.2.4"
     "cr_internet_p-ip" = "192.0.2.5"
     "cr_internet_r-ip" = "192.0.2.6"
+    "local_vpcs"       = "192.0.255.0/24"
   }
   enable_ecmp = false
 }
@@ -110,6 +111,8 @@ resource "panos_panorama_bgp_peer" "ncc_internal_p" {
   peer_address_ip         = "$cr_internal_p-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  keep_alive_interval     = var.bgp_keep_alive_interval
+  hold_time               = 3 * var.bgp_keep_alive_interval
   lifecycle { create_before_destroy = true }
 }
 
@@ -124,6 +127,8 @@ resource "panos_panorama_bgp_peer" "ncc_internal_r" {
   peer_address_ip         = "$cr_internal_r-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  keep_alive_interval     = var.bgp_keep_alive_interval
+  hold_time               = 3 * var.bgp_keep_alive_interval
   lifecycle { create_before_destroy = true }
 }
 
@@ -150,6 +155,8 @@ resource "panos_panorama_bgp_peer" "ncc_internet_p" {
   peer_address_ip         = "$cr_internet_p-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  keep_alive_interval     = var.bgp_keep_alive_interval
+  hold_time               = 3 * var.bgp_keep_alive_interval
   lifecycle { create_before_destroy = true }
 }
 
@@ -164,6 +171,8 @@ resource "panos_panorama_bgp_peer" "ncc_internet_r" {
   peer_address_ip         = "$cr_internet_r-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
+  keep_alive_interval     = var.bgp_keep_alive_interval
+  hold_time               = 3 * var.bgp_keep_alive_interval
   lifecycle { create_before_destroy = true }
 }
 
@@ -178,6 +187,49 @@ resource "panos_panorama_bgp_redist_rule" "ncc" {
     panos_panorama_bgp.ncc
   ]
   lifecycle { create_before_destroy = true }
+}
+
+
+resource "panos_panorama_bgp_export_rule_group" "ncc" {
+  template       = module.cfg_ncc.template_name
+  virtual_router = "vr1"
+  rule {
+    name = "dg-for-internal"
+    match_address_prefix {
+      prefix = "0.0.0.0/0"
+      exact  = true
+    }
+    match_route_table = "unicast"
+    action            = "allow"
+    used_by = [
+      panos_panorama_bgp_peer_group.ncc_internal.name
+    ]
+  }
+  rule {
+    name = "local-vpcs"
+    match_address_prefix {
+      prefix = "$local_vpcs"
+      exact  = false
+    }
+    match_route_table = "unicast"
+    action            = "allow"
+    used_by = [
+      panos_panorama_bgp_peer_group.ncc_internet.name
+    ]
+  }
+  rule {
+    name = "all-private"
+    match_address_prefix {
+      prefix = "172.16.0.0/12"
+      exact  = false
+    }
+    match_route_table = "unicast"
+    action            = "allow"
+    med               = 20000
+    used_by = [
+      panos_panorama_bgp_peer_group.ncc_internet.name
+    ]
+  }
 }
 
 

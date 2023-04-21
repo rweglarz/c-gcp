@@ -27,6 +27,7 @@ locals {
         ha1-peer-ip      = local.private_ips.fwp[lk].mgmt_ip
         ha2-local-ip     = local.private_ips.fws[lk].eth1_3_ip
         ha2-gw           = local.private_ips.fws[lk].eth1_3_gw
+        local_vpcs       = local.local_vpcs[lk]
         } : {
         k     = format("%s-%s", lk, vk)
         ts    = panos_panorama_template_stack.fws[lk].name
