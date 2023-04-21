@@ -172,8 +172,9 @@ variable "ssh_key_path" {
 
 variable "asn" {
   default = {
-    ncc = "65501"
-    fw  = "65002"
+    ncc_internet = "65501"
+    fw           = "65002"
+    ncc_internal = "65503"
   }
 }
 

@@ -60,14 +60,16 @@ module "cfg_ncc" {
     }
   }
   variables = {
-    "eth1_1-gw"  = "192.0.1.1"
-    "eth1_1-ip"  = "192.0.1.2"
-    "eth1_1-ipm" = "192.0.1.2/32"
-    "eth1_2-gw"  = "192.0.2.1"
-    "eth1_2-ip"  = "192.0.2.2"
-    "eth1_2-ipm" = "192.0.2.2/32"
-    "ncc_p-ip"   = "192.0.2.3"
-    "ncc_r-ip"   = "192.0.2.4"
+    "eth1_1-gw"        = "192.0.1.1"
+    "eth1_1-ip"        = "192.0.1.2"
+    "eth1_1-ipm"       = "192.0.1.2/32"
+    "eth1_2-gw"        = "192.0.2.1"
+    "eth1_2-ip"        = "192.0.2.2"
+    "eth1_2-ipm"       = "192.0.2.2/32"
+    "cr_internal_p-ip" = "192.0.2.3"
+    "cr_internal_r-ip" = "192.0.2.4"
+    "cr_internet_p-ip" = "192.0.2.5"
+    "cr_internet_r-ip" = "192.0.2.6"
   }
   enable_ecmp = false
 }
@@ -85,10 +87,10 @@ resource "panos_panorama_bgp" "ncc" {
   lifecycle { create_before_destroy = true }
 }
 
-resource "panos_panorama_bgp_peer_group" "ncc" {
+resource "panos_panorama_bgp_peer_group" "ncc_internal" {
   template        = module.cfg_ncc.template_name
   virtual_router  = "vr1"
-  name            = "ncc"
+  name            = "ncc-internal"
   type            = "ebgp"
   export_next_hop = "use-self"
   depends_on = [
@@ -97,33 +99,74 @@ resource "panos_panorama_bgp_peer_group" "ncc" {
   lifecycle { create_before_destroy = true }
 }
 
-resource "panos_panorama_bgp_peer" "ncc_p" {
+resource "panos_panorama_bgp_peer" "ncc_internal_p" {
   template                = module.cfg_ncc.template_name
-  name                    = "ncc_p"
+  name                    = "cr_prv_p"
   virtual_router          = "vr1"
-  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc.name
-  peer_as                 = var.asn["ncc"]
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc_internal.name
+  peer_as                 = var.asn["ncc_internal"]
   local_address_interface = "ethernet1/2"
   local_address_ip        = "$eth1_2-ipm"
-  peer_address_ip         = "$ncc_p-ip"
+  peer_address_ip         = "$cr_internal_p-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
   lifecycle { create_before_destroy = true }
 }
 
-resource "panos_panorama_bgp_peer" "ncc_r" {
+resource "panos_panorama_bgp_peer" "ncc_internal_r" {
   template                = module.cfg_ncc.template_name
-  name                    = "ncc_r"
+  name                    = "cr_prv_r"
   virtual_router          = "vr1"
-  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc.name
-  peer_as                 = var.asn["ncc"]
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc_internal.name
+  peer_as                 = var.asn["ncc_internal"]
   local_address_interface = "ethernet1/2"
   local_address_ip        = "$eth1_2-ipm"
-  peer_address_ip         = "$ncc_r-ip"
+  peer_address_ip         = "$cr_internal_r-ip"
   max_prefixes            = "unlimited"
   multi_hop               = 1
   lifecycle { create_before_destroy = true }
 }
+
+resource "panos_panorama_bgp_peer_group" "ncc_internet" {
+  template        = module.cfg_ncc.template_name
+  virtual_router  = "vr1"
+  name            = "ncc-internet"
+  type            = "ebgp"
+  export_next_hop = "use-self"
+  depends_on = [
+    panos_panorama_bgp.ncc
+  ]
+  lifecycle { create_before_destroy = true }
+}
+
+resource "panos_panorama_bgp_peer" "ncc_internet_p" {
+  template                = module.cfg_ncc.template_name
+  name                    = "cr_pub_p"
+  virtual_router          = "vr1"
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc_internet.name
+  peer_as                 = var.asn["ncc_internet"]
+  local_address_interface = "ethernet1/1"
+  local_address_ip        = "$eth1_1-ipm"
+  peer_address_ip         = "$cr_internet_p-ip"
+  max_prefixes            = "unlimited"
+  multi_hop               = 1
+  lifecycle { create_before_destroy = true }
+}
+
+resource "panos_panorama_bgp_peer" "ncc_internet_r" {
+  template                = module.cfg_ncc.template_name
+  name                    = "cr_pub_r"
+  virtual_router          = "vr1"
+  bgp_peer_group          = panos_panorama_bgp_peer_group.ncc_internet.name
+  peer_as                 = var.asn["ncc_internet"]
+  local_address_interface = "ethernet1/1"
+  local_address_ip        = "$eth1_1-ipm"
+  peer_address_ip         = "$cr_internet_r-ip"
+  max_prefixes            = "unlimited"
+  multi_hop               = 1
+  lifecycle { create_before_destroy = true }
+}
+
 
 resource "panos_panorama_bgp_redist_rule" "ncc" {
   template       = module.cfg_ncc.template_name
