@@ -13,7 +13,7 @@ resource "google_compute_instance" "fwp" {
     var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
     var.bootstrap_options["common"],
     {
-      dgname  = panos_device_group.ncc_r[each.key].name
+      dgname = panos_device_group.ncc_r[each.key].name
       tplname = panos_panorama_template_stack.fwp[each.key].name
     }
   )
@@ -69,7 +69,7 @@ resource "google_compute_instance" "fws" {
     var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
     var.bootstrap_options["common"],
     {
-      dgname  = panos_device_group.ncc_r[each.key].name
+      dgname = panos_device_group.ncc_r[each.key].name
       tplname = panos_panorama_template_stack.fws[each.key].name
     }
   )
@@ -121,6 +121,14 @@ resource "google_compute_instance_group" "fwp" {
     google_compute_instance.fwp[each.key].self_link,
   ]
   zone         = data.google_compute_zones.available[each.key].names[0]
+  named_port {
+    name = "s1"
+    port = "8081"
+  }
+  named_port {
+    name = "s2"
+    port = "8082"
+  }
 }
 
 resource "google_compute_instance_group" "fws" {
@@ -130,6 +138,14 @@ resource "google_compute_instance_group" "fws" {
     google_compute_instance.fws[each.key].self_link,
   ]
   zone         = data.google_compute_zones.available[each.key].names[1]
+  named_port {
+    name = "s1"
+    port = "8081"
+  }
+  named_port {
+    name = "s2"
+    port = "8082"
+  }
 }
 
 output "fw_mgmt_ip" {
