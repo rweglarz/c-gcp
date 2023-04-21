@@ -7,6 +7,9 @@ locals {
     "europe-west2" = cidrsubnet(var.cidr, 1, 1)
   }
   private_ips = {
+    fixed = {
+      lo_1_ip   = "192.0.2.1"
+    }
     fwp = { for r,v in var.networks.mgmt : r => {
       mgmt_ip   = cidrhost(google_compute_subnetwork.mgmt[r].ip_cidr_range, 5)
       eth1_1_ip = cidrhost(google_compute_subnetwork.internet[r].ip_cidr_range, 5)

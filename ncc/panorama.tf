@@ -44,6 +44,11 @@ module "cfg_ncc" {
       static_ips = ["$eth1_2-ipm"]
       zone       = "internal"
     }
+    "loopback.1" = {
+      static_ips         = [local.private_ips.fixed["lo_1_ip"]]
+      zone               = "internet"
+      management_profile = "https"
+    }
   }
   routes = {
     dg = {
@@ -60,16 +65,16 @@ module "cfg_ncc" {
     }
   }
   variables = {
-    "eth1_1-gw"        = "192.0.1.1"
-    "eth1_1-ip"        = "192.0.1.2"
-    "eth1_1-ipm"       = "192.0.1.2/32"
-    "eth1_2-gw"        = "192.0.2.1"
-    "eth1_2-ip"        = "192.0.2.2"
-    "eth1_2-ipm"       = "192.0.2.2/32"
-    "cr_internal_p-ip" = "192.0.2.3"
-    "cr_internal_r-ip" = "192.0.2.4"
-    "cr_internet_p-ip" = "192.0.2.5"
-    "cr_internet_r-ip" = "192.0.2.6"
+    "eth1_1-gw"        = "192.0.2.11"
+    "eth1_1-ip"        = "192.0.2.12"
+    "eth1_1-ipm"       = "192.0.2.12/32"
+    "eth1_2-gw"        = "192.0.2.21"
+    "eth1_2-ip"        = "192.0.2.22"
+    "eth1_2-ipm"       = "192.0.2.22/32"
+    "cr_internet_p-ip" = "192.0.2.13"
+    "cr_internet_r-ip" = "192.0.2.14"
+    "cr_internal_p-ip" = "192.0.2.23"
+    "cr_internal_r-ip" = "192.0.2.24"
     "local_vpcs"       = "192.0.255.0/24"
   }
   enable_ecmp = false
@@ -233,6 +238,14 @@ resource "panos_panorama_bgp_export_rule_group" "ncc" {
 }
 
 
+resource "panos_panorama_service_object" "hc" {
+  device_group     = panos_device_group.ncc.name
+  name             = "tcp-health-check"
+  protocol         = "tcp"
+  destination_port = 54321
+  lifecycle { create_before_destroy = true }
+}
+
 resource "panos_panorama_service_object" "s" {
   for_each         = var.global_services
   device_group     = panos_device_group.ncc.name
@@ -242,10 +255,44 @@ resource "panos_panorama_service_object" "s" {
   lifecycle {
     create_before_destroy = true
   }
+
+resource "panos_panorama_address_object" "ext_nlb" {
+  device_group = panos_device_group.ncc.name
+  name         = "ext_nlb"
+  value        = "192.0.2.99"
+  lifecycle { create_before_destroy = true }
+}
+
+resource "panos_panorama_address_object" "ext_nlb_r" {
+  for_each     = var.networks["internet"]
+  device_group = panos_device_group.ncc_r[each.key].name
+  name         = "ext_nlb"
+  value        = google_compute_forwarding_rule.ext[each.key].ip_address
+  lifecycle { create_before_destroy = true }
 }
 
 resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
   device_group = panos_device_group.ncc.name
+  rule {
+    name = "inbound hc snat"
+    original_packet {
+      source_zones          = ["internet"]
+      destination_zone      = "internet"
+      source_addresses      = ["any"]
+      destination_addresses = [panos_panorama_address_object.ext_nlb.name]
+      service               = panos_panorama_service_object.hc.name
+    }
+    translated_packet {
+      source {
+      }
+      destination {
+        dynamic_translation {
+          address = local.private_ips.fixed["lo_1_ip"]
+          port    = 443
+        }
+      }
+    }
+  }
   rule {
     name = "default outbound snat"
     original_packet {
@@ -253,13 +300,12 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
       destination_zone      = "internet"
       source_addresses      = ["172.16.0.0/12"]
       destination_addresses = ["any"]
-
     }
     translated_packet {
       source {
         dynamic_ip_and_port {
-          interface_address {
-            interface = "ethernet1/1"
+          translated_address {
+            translated_addresses = [panos_panorama_address_object.ext_nlb.name]
           }
         }
       }
