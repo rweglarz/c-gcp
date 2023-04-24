@@ -235,6 +235,7 @@ resource "panos_panorama_bgp_export_rule_group" "ncc" {
       panos_panorama_bgp_peer_group.ncc_internet.name
     ]
   }
+  lifecycle { create_before_destroy = true }
 }
 
 
@@ -252,9 +253,8 @@ resource "panos_panorama_service_object" "s" {
   name             = "tcp-${each.key}"
   protocol         = "tcp"
   destination_port = each.value
-  lifecycle {
-    create_before_destroy = true
-  }
+  lifecycle { create_before_destroy = true }
+}
 
 resource "panos_panorama_address_object" "ext_nlb" {
   device_group = panos_device_group.ncc.name
@@ -419,4 +419,5 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
       }
     }
   }
+  lifecycle { create_before_destroy = true }
 }
