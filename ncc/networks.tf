@@ -187,7 +187,7 @@ resource "google_compute_firewall" "mgmt-i-tmp" {
 
 
 resource "google_compute_route" "srv0-mgmt-exc" {
-  for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
+  for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr if length(regexall("jumphost", e.description))==0}
   name             = "${var.name}-srv-app0-${each.key}"
   description      = "srv0 traffic exceptions"
   dest_range       = each.value
@@ -197,7 +197,7 @@ resource "google_compute_route" "srv0-mgmt-exc" {
 }
 
 resource "google_compute_route" "srv1-mgmt-exc" {
-  for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr }
+  for_each         = { for e in var.mgmt_ips : replace(e.description, " ", "-") => e.cidr if length(regexall("jumphost", e.description))==0}
   name             = "${var.name}-srv-app1-${each.key}"
   description      = "srv1 traffic exceptions"
   dest_range       = each.value
