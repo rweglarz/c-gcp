@@ -314,6 +314,54 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
     }
   }
   rule {
+    name = "inbound region1"
+    description = format("pub:%s to %s",
+      google_compute_forwarding_rule.ext["europe-west1"].ip_address,
+      "80"
+    )
+    original_packet {
+      source_zones          = ["internet"]
+      destination_zone      = "internet"
+      source_addresses      = ["any"]
+      destination_addresses = [google_compute_forwarding_rule.ext["europe-west1"].ip_address]
+      service               = "service-http"
+    }
+    translated_packet {
+      source {
+      }
+      destination {
+        dynamic_translation {
+          address = google_compute_instance.srv_app0["europe-west1"].network_interface[0].network_ip
+          port    = "80"
+        }
+      }
+    }
+  }
+  rule {
+    name = "inbound region2"
+    description = format("pub:%s to %s",
+      google_compute_forwarding_rule.ext["europe-west2"].ip_address,
+      "80"
+    )
+    original_packet {
+      source_zones          = ["internet"]
+      destination_zone      = "internet"
+      source_addresses      = ["any"]
+      destination_addresses = [google_compute_forwarding_rule.ext["europe-west2"].ip_address]
+      service               = "service-http"
+    }
+    translated_packet {
+      source {
+      }
+      destination {
+        dynamic_translation {
+          address = google_compute_instance.srv_app0["europe-west2"].network_interface[0].network_ip
+          port    = "80"
+        }
+      }
+    }
+  }
+  rule {
     name = "inbound s1"
     description = format("pub:%s to %s",
       google_compute_global_forwarding_rule.ext["s1"].ip_address,

@@ -66,3 +66,27 @@ resource "google_dns_record_set" "srv_ext" {
     google_compute_instance.srv_ext[each.key].network_interface.0.access_config.0.nat_ip
   ]
 }
+
+resource "google_dns_record_set" "glb" {
+  for_each     = var.global_services
+  managed_zone = data.google_dns_managed_zone.this.name
+  name         = "ncc-glb-${each.key}.${data.google_dns_managed_zone.this.dns_name}"
+  type         = "A"
+  ttl          = local.dns_ttl
+
+  rrdatas = [
+    google_compute_global_forwarding_rule.ext[each.key].ip_address
+  ]
+}
+
+resource "google_dns_record_set" "nlb" {
+  for_each     = var.networks["internet"]
+  managed_zone = data.google_dns_managed_zone.this.name
+  name         = "ncc-nlb-${each.key}.${data.google_dns_managed_zone.this.dns_name}"
+  type         = "A"
+  ttl          = local.dns_ttl
+
+  rrdatas = [
+    google_compute_forwarding_rule.ext[each.key].ip_address
+  ]
+}
