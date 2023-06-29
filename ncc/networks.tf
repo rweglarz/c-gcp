@@ -5,7 +5,7 @@ resource "google_compute_network" "mgmt" {
 }
 
 resource "google_compute_network" "internet" {
-  name                    = "${var.name}-inernet"
+  name                    = "${var.name}-internet"
   auto_create_subnetworks = "false"
   routing_mode            = var.routing_mode
 }
