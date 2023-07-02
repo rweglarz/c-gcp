@@ -118,6 +118,9 @@ resource "panos_panorama_bgp_peer" "ncc_internal_p" {
   multi_hop               = 1
   keep_alive_interval     = var.bgp_keep_alive_interval
   hold_time               = 3 * var.bgp_keep_alive_interval
+  depends_on = [
+    module.cfg_ncc
+  ]
   lifecycle { create_before_destroy = true }
 }
 
@@ -134,6 +137,9 @@ resource "panos_panorama_bgp_peer" "ncc_internal_r" {
   multi_hop               = 1
   keep_alive_interval     = var.bgp_keep_alive_interval
   hold_time               = 3 * var.bgp_keep_alive_interval
+  depends_on = [
+    module.cfg_ncc
+  ]
   lifecycle { create_before_destroy = true }
 }
 
@@ -162,6 +168,9 @@ resource "panos_panorama_bgp_peer" "ncc_internet_p" {
   multi_hop               = 1
   keep_alive_interval     = var.bgp_keep_alive_interval
   hold_time               = 3 * var.bgp_keep_alive_interval
+  depends_on = [
+    module.cfg_ncc
+  ]
   lifecycle { create_before_destroy = true }
 }
 
@@ -178,6 +187,9 @@ resource "panos_panorama_bgp_peer" "ncc_internet_r" {
   multi_hop               = 1
   keep_alive_interval     = var.bgp_keep_alive_interval
   hold_time               = 3 * var.bgp_keep_alive_interval
+  depends_on = [
+    module.cfg_ncc
+  ]
   lifecycle { create_before_destroy = true }
 }
 
