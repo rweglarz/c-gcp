@@ -90,6 +90,7 @@ resource "panos_panorama_bgp" "ncc" {
   as_number = var.asn["fw"]
 
   allow_redistribute_default_route = true
+  enable_graceful_restart          = var.bgp_graceful_restart
   lifecycle { create_before_destroy = true }
 }
 

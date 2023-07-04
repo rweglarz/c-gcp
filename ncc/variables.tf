@@ -182,6 +182,10 @@ variable "vpc_routing_mode" {
   default = "GLOBAL"
 }
 
+variable "bgp_graceful_restart" {
+  default = true
+}
+
 variable "bgp_keep_alive_interval" {
   default = 20    # cloud router default
 }
