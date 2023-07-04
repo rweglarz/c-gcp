@@ -1,11 +1,14 @@
-resource "google_network_connectivity_hub" "this" {
-  name = "${var.name}-hub"
+resource "google_network_connectivity_hub" "internal" {
+  name = "${var.name}-internal"
+}
+resource "google_network_connectivity_hub" "internet" {
+  name = "${var.name}-internet"
 }
 
 resource "google_network_connectivity_spoke" "internal" {
   for_each = var.networks["internal"]
   name     = "${var.name}-internal-${each.key}"
-  hub      = google_network_connectivity_hub.this.id
+  hub      = google_network_connectivity_hub.internal.id
   location = each.key
 
   linked_router_appliance_instances {
@@ -111,7 +114,7 @@ resource "google_compute_router_peer" "internal_r_fws" {
 resource "google_network_connectivity_spoke" "internet" {
   for_each = var.networks["internet"]
   name     = "${var.name}-internet-${each.key}"
-  hub      = google_network_connectivity_hub.this.id
+  hub      = google_network_connectivity_hub.internet.id
   location = each.key
 
   linked_router_appliance_instances {
