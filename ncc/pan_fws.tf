@@ -4,7 +4,7 @@ resource "random_id" "rid" {
 
 resource "google_compute_instance" "fwp" {
   for_each     = var.networks["mgmt"]
-  name         = "${var.name}-fwp-${each.key}-${random_id.rid.hex}"
+  name         = "${var.name}-fw-${each.key}-p-${random_id.rid.hex}"
   machine_type = var.machine_type
   zone         = data.google_compute_zones.available[each.key].names[0]
 
@@ -60,7 +60,7 @@ resource "google_compute_instance" "fwp" {
 
 resource "google_compute_instance" "fws" {
   for_each     = var.networks["mgmt"]
-  name         = "${var.name}-fws-${each.key}-${random_id.rid.hex}"
+  name         = "${var.name}-fw-${each.key}-s-${random_id.rid.hex}"
   machine_type = var.machine_type
   zone         = data.google_compute_zones.available[each.key].names[1]
 
