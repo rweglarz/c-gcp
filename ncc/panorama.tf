@@ -225,12 +225,14 @@ resource "panos_panorama_bgp_export_rule_group" "ncc" {
   }
   rule {
     name = "local-vpcs"
+    enable = true
     match_address_prefix {
       prefix = "$local_vpcs"
       exact  = false
     }
     match_route_table = "unicast"
     action            = "allow"
+    med               = 0
     used_by = [
       panos_panorama_bgp_peer_group.ncc_internet.name
     ]
