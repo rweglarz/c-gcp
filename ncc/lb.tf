@@ -11,12 +11,25 @@ resource "google_compute_health_check" "s" {
   }
 }
 
+resource "google_compute_health_check" "st" {
+  for_each            = var.global_services
+  name                = "${var.name}-s-tcp-${each.key}"
+
+  timeout_sec        = 1
+  check_interval_sec = 5
+
+  http_health_check {
+    port = each.value
+  }
+}
+
 resource "google_compute_backend_service" "ext" {
   for_each              = var.global_services
   name                  = "${var.name}-ext-${each.key}"
   protocol              = "TCP"
   load_balancing_scheme = "EXTERNAL"
-  health_checks         = [google_compute_health_check.s[each.key].id]
+  #health_checks         = [google_compute_health_check.s[each.key].id]
+  health_checks         = [google_compute_health_check.st[each.key].id]
   session_affinity      = "CLIENT_IP"
   backend {
     group                        = google_compute_instance_group.fwp["europe-west1"].id
