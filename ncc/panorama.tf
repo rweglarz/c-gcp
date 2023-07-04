@@ -425,7 +425,7 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
       }
       destination {
         dynamic_translation {
-          address = google_compute_instance.srv_app0["europe-west2"].network_interface[0].network_ip
+          address = google_compute_instance.srv_app1["europe-west2"].network_interface[0].network_ip
           port    = "80"
         }
       }
