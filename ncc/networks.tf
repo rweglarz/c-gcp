@@ -7,19 +7,19 @@ resource "google_compute_network" "mgmt" {
 resource "google_compute_network" "internet" {
   name                    = "${var.name}-internet"
   auto_create_subnetworks = "false"
-  routing_mode            = var.routing_mode
+  routing_mode            = var.vpc_routing_mode
 }
 
 resource "google_compute_network" "internal" {
   name                    = "${var.name}-internal"
   auto_create_subnetworks = "false"
-  routing_mode            = var.routing_mode
+  routing_mode            = var.vpc_routing_mode
 }
 
 resource "google_compute_network" "ha" {
   name                    = "${var.name}-ha"
   auto_create_subnetworks = "false"
-  routing_mode            = var.routing_mode
+  routing_mode            = var.vpc_routing_mode
 }
 
 resource "google_compute_subnetwork" "mgmt" {
@@ -59,7 +59,7 @@ resource "google_compute_network" "srv_app0" {
   name                    = "${var.name}-srv-app0"
   auto_create_subnetworks = "false"
 
-  routing_mode                    = var.routing_mode
+  routing_mode                    = var.vpc_routing_mode
   delete_default_routes_on_create = true
 }
 resource "google_compute_subnetwork" "srv_app0" {
@@ -74,7 +74,7 @@ resource "google_compute_network" "srv_app1" {
   name                    = "${var.name}-srv-app1"
   auto_create_subnetworks = "false"
 
-  routing_mode                    = var.routing_mode
+  routing_mode                    = var.vpc_routing_mode
   delete_default_routes_on_create = true
 }
 

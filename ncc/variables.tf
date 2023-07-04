@@ -178,7 +178,7 @@ variable "asn" {
   }
 }
 
-variable "routing_mode" {
+variable "vpc_routing_mode" {
   default = "GLOBAL"
 }
 
