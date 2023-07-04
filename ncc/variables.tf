@@ -183,7 +183,7 @@ variable "vpc_routing_mode" {
 }
 
 variable "bgp_keep_alive_interval" {
-  default = 30
+  default = 20    # cloud router default
 }
 
 variable "global_services" {
