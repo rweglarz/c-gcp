@@ -148,7 +148,6 @@ resource "google_compute_instance_group" "fws" {
   }
 }
 
-output "fw_mgmt_ip" {
-  #value = google_compute_instance.fwp[*].network_interface.1.access_config.0.nat_ip
-  value = {}
-}
+# output "fw_mgmt_ip" {
+#   value = google_compute_instance.fwp[*].network_interface.1.access_config.0.nat_ip
+# }
