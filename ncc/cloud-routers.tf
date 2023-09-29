@@ -74,6 +74,9 @@ resource "google_compute_router_peer" "internal_p_fwp" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fwp[each.key].self_link
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_2_ip
+  depends_on = [
+    google_network_connectivity_spoke.internal
+  ]
 }
 
 resource "google_compute_router_peer" "internal_r_fwp" {
@@ -85,6 +88,9 @@ resource "google_compute_router_peer" "internal_r_fwp" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fwp[each.key].self_link
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_2_ip
+  depends_on = [
+    google_network_connectivity_spoke.internal
+  ]
 }
 
 
@@ -97,6 +103,9 @@ resource "google_compute_router_peer" "internal_p_fws" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fws[each.key].self_link
   peer_ip_address           = local.private_ips.fws[each.key].eth1_2_ip
+  depends_on = [
+    google_network_connectivity_spoke.internal
+  ]
 }
 
 resource "google_compute_router_peer" "internal_r_fws" {
@@ -108,6 +117,9 @@ resource "google_compute_router_peer" "internal_r_fws" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fws[each.key].self_link
   peer_ip_address           = local.private_ips.fws[each.key].eth1_2_ip
+  depends_on = [
+    google_network_connectivity_spoke.internal
+  ]
 }
 
 
@@ -177,6 +189,9 @@ resource "google_compute_router_peer" "internet_p_fwp" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fwp[each.key].self_link
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_1_ip
+  depends_on = [
+    google_network_connectivity_spoke.internet
+  ]
 }
 
 resource "google_compute_router_peer" "internet_r_fwp" {
@@ -188,6 +203,9 @@ resource "google_compute_router_peer" "internet_r_fwp" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fwp[each.key].self_link
   peer_ip_address           = local.private_ips.fwp[each.key].eth1_1_ip
+  depends_on = [
+    google_network_connectivity_spoke.internet
+  ]
 }
 
 
@@ -200,6 +218,9 @@ resource "google_compute_router_peer" "internet_p_fws" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fws[each.key].self_link
   peer_ip_address           = local.private_ips.fws[each.key].eth1_1_ip
+  depends_on = [
+    google_network_connectivity_spoke.internet
+  ]
 }
 
 resource "google_compute_router_peer" "internet_r_fws" {
@@ -211,6 +232,9 @@ resource "google_compute_router_peer" "internet_r_fws" {
   peer_asn                  = var.asn.fw
   router_appliance_instance = google_compute_instance.fws[each.key].self_link
   peer_ip_address           = local.private_ips.fws[each.key].eth1_1_ip
+  depends_on = [
+    google_network_connectivity_spoke.internet
+  ]
 }
 
 
