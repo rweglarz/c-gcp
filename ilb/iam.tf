@@ -21,8 +21,8 @@ resource "google_service_account" "saj" {
 
 
 resource "google_project_iam_custom_role" "vm-logger" {
-  role_id     = "vm_logger"
-  title       = "vm-logger"
+  role_id     = "vm_logger_${random_id.this.hex}"
+  title       = "vm-logger-${random_id.this.hex}"
   description = "jump jump"
   permissions = [
     "logging.logEntries.create",
