@@ -16,8 +16,9 @@ resource "google_compute_instance" "server-a" {
     subnetwork = google_compute_subnetwork.data_subnets[count.index+1].id
     network_ip =  cidrhost(google_compute_subnetwork.data_subnets[count.index+1].ip_cidr_range, 80)
   }
+
   tags = [
-    "workloads"
+    "workloads-a"
   ]
 }
 
@@ -40,6 +41,10 @@ resource "google_compute_instance" "server-b" {
     subnetwork = google_compute_subnetwork.data_subnets[count.index+1].id
     network_ip =  cidrhost(google_compute_subnetwork.data_subnets[count.index+1].ip_cidr_range, 85)
   }
+
+  tags = [
+    "workloads-b"
+  ]
 }
 
 
@@ -61,7 +66,8 @@ resource "google_compute_instance" "server-c" {
     subnetwork = google_compute_subnetwork.peered_subnets[count.index+1].id
     network_ip =  cidrhost(google_compute_subnetwork.peered_subnets[count.index+1].ip_cidr_range, 80)
   }
+
   tags = [
-    "workloads"
+    "workloads-c"
   ]
 }
