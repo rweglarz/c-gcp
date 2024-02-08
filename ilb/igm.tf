@@ -5,9 +5,9 @@ resource "google_compute_health_check" "ah" {
   healthy_threshold   = 6
   unhealthy_threshold = 8 
 
-  https_health_check {
+  http_health_check {
     request_path = "/php/login.php"
-    port         = "443"
+    port         = "80"
   }
 }
 resource "google_compute_region_health_check" "fw" {
@@ -17,9 +17,9 @@ resource "google_compute_region_health_check" "fw" {
   healthy_threshold   = 2
   unhealthy_threshold = 10
 
-  https_health_check {
+  http_health_check {
     request_path = "/unauth/php/health.php"
-    port         = "443"
+    port         = "80"
   }
 }
 
