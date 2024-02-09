@@ -35,7 +35,7 @@ variable "srv_machine_type"{
 variable "bootstrap_options" {
   type = map
 }
-variable "bootstrap_options_self" {
+variable "bootstrap_options_byol" {
   type = map
 }
 variable "bootstrap_options_paygo" {
@@ -62,3 +62,7 @@ variable "dns_zone" {
   default = "w-gcp"
 }
 
+variable "session_resiliency" {
+  type    = bool
+  default = false
+}

@@ -27,7 +27,14 @@ resource "google_compute_instance_template" "fw" {
   name_prefix    = var.name
   machine_type   = var.fw_machine_type
   can_ip_forward = true
-  metadata       = var.bootstrap_options_paygo
+  metadata       = merge(
+    var.bootstrap_options_byol,
+    var.session_resiliency ? {
+      "plugin-op-commands" = try(join(",", [var.bootstrap_options_byol["plugin-op-commands"], "set-sess-ress:True"]), "set-sess-ress:True"),
+      "redis-endpoint"     = "${google_redis_instance.this[0].host}:${google_redis_instance.this[0].port}",
+      "redis-auth"         = google_redis_instance.this[0].auth_string,
+    } : {}
+  )
 
   /*
   service_account {
@@ -60,8 +67,8 @@ resource "google_compute_instance_template" "fw" {
   }
 
   disk {
-    #source_image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1102"
-    source_image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle1-1110"
+    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1110"
+    #source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle1-1110"
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
@@ -108,6 +115,7 @@ resource "google_compute_region_instance_group_manager" "fws" {
 
 
 resource "google_compute_region_backend_service" "bsvc" {
+  provider              = google-beta
   count                 = var.vpc_count
   name                  = "${var.name}-bsvc-${count.index}"
   protocol              = "UNSPECIFIED"
@@ -123,6 +131,13 @@ resource "google_compute_region_backend_service" "bsvc" {
     group = google_compute_region_instance_group_manager.fws2.instance_group
   }
   */
+  dynamic "connection_tracking_policy" {
+    for_each = var.session_resiliency ? [1] : [0]
+    content {
+      tracking_mode                                = "PER_SESSION"
+      connection_persistence_on_unhealthy_backends = "NEVER_PERSIST"
+    }
+  }
 }
 
 resource "google_compute_forwarding_rule" "fwdrule" {
