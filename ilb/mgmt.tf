@@ -8,7 +8,7 @@ resource "google_compute_address" "jumphost" {
 }
 
 resource "google_compute_instance" "jumphost" {
-  name    = "${var.name}-mgmt"
+  name    = "${var.name}-jumphost"
   machine_type = "f1-micro"
   service_account {
       email  = google_service_account.saj.email

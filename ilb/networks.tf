@@ -4,7 +4,7 @@ resource "google_compute_network" "mgmt" {
 }
 resource "google_compute_subnetwork" "mgmt" {
   name          = "${var.name}-mgmt-s"
-  ip_cidr_range = var.mgmt_cidr
+  ip_cidr_range = cidrsubnet(var.cidr, 5, 0)
   network       = google_compute_network.mgmt.id
 }
 
@@ -14,32 +14,68 @@ resource "google_compute_network" "public" {
 }
 resource "google_compute_subnetwork" "public" {
   name          = "${var.name}-public-s"
-  ip_cidr_range = cidrsubnet(var.data_cidr, 3, 0)
+  ip_cidr_range = cidrsubnet(var.cidr, 5, 1)
   network       = google_compute_network.public.id
 }
 
 resource "google_compute_network" "data_nets" {
   count                   = var.vpc_count
-  name                    = "${var.name}-data-n${count.index}"
+  name                    = "${var.name}-n${count.index+2}"
   auto_create_subnetworks = "false"
 }
-resource "google_compute_subnetwork" "data_subnets" {
+locals {
+  data_nets_cidr = {
+     for k,v in google_compute_network.data_nets: k => cidrsubnet(var.cidr, 5, 2+k)
+  }
+  peered_net_v0_cidr = {
+     for k,v in google_compute_network.peered_net_v0: k => cidrsubnet(var.cidr, 5, 8+2*k)
+  }
+  peered_net_v1_cidr = {
+     for k,v in google_compute_network.peered_net_v1: k => cidrsubnet(var.cidr, 5, 8+2*k+1)
+  }
+}
+resource "google_compute_subnetwork" "data_subnet_fw" {
   count         = var.vpc_count
-  name          = "${var.name}-data-ns${count.index}"
-  ip_cidr_range = cidrsubnet(var.data_cidr, 3, count.index+1)
+  name          = "${var.name}-data-n${count.index+2}-fw"
+  ip_cidr_range = cidrsubnet(local.data_nets_cidr[count.index], 2, 0)
+  network       = google_compute_network.data_nets[count.index].id
+}
+resource "google_compute_subnetwork" "data_subnet_s0" {
+  count         = var.vpc_count
+  name          = "${var.name}-data-n${count.index+2}-s0"
+  ip_cidr_range = cidrsubnet(local.data_nets_cidr[count.index], 2, 1)
+  network       = google_compute_network.data_nets[count.index].id
+}
+resource "google_compute_subnetwork" "data_subnet_s1" {
+  count         = var.vpc_count
+  name          = "${var.name}-data-n${count.index+2}-s1"
+  ip_cidr_range = cidrsubnet(local.data_nets_cidr[count.index], 2, 2)
   network       = google_compute_network.data_nets[count.index].id
 }
 
-resource "google_compute_network" "peered_nets" {
+resource "google_compute_network" "peered_net_v0" {
   count                   = var.vpc_count
-  name                    = "${var.name}-peered-n${count.index}"
+  name                    = "${var.name}-p${count.index+2}-v0"
   auto_create_subnetworks = "false"
 }
-resource "google_compute_subnetwork" "peered_subnets" {
+resource "google_compute_subnetwork" "peered_subnet_v0_s0" {
   count         = var.vpc_count
-  name          = "${var.name}-peered-ns${count.index}"
-  ip_cidr_range = cidrsubnet(var.data_cidr, 3, var.vpc_count+count.index+1)
-  network       = google_compute_network.peered_nets[count.index].id
+  name          = "${var.name}-p${count.index+2}-v0-s0"
+  ip_cidr_range = cidrsubnet(local.peered_net_v0_cidr[count.index], 2, 0)
+  network       = google_compute_network.peered_net_v0[count.index].id
+}
+
+
+resource "google_compute_network" "peered_net_v1" {
+  count                   = var.vpc_count
+  name                    = "${var.name}-p${count.index+2}-v1"
+  auto_create_subnetworks = "false"
+}
+resource "google_compute_subnetwork" "peered_subnet_v1_s0" {
+  count         = var.vpc_count
+  name          = "${var.name}-p${count.index+2}-v1-s0"
+  ip_cidr_range = cidrsubnet(local.peered_net_v1_cidr[count.index], 2, 0)
+  network       = google_compute_network.peered_net_v1[count.index].id
 }
 
 
@@ -124,23 +160,9 @@ resource "google_compute_firewall" "mgmt-e" {
   }
 }
 
-resource "google_compute_firewall" "hc" {
-  name      = "${var.name}-health-i"
-  direction = "INGRESS"
-  network   = google_compute_network.mgmt.id
-  source_ranges = [
-    "130.211.0.0/22",
-    "35.191.0.0/16",
-    "35.235.240.0/20",
-  ]
-  allow {
-    protocol = "tcp"
-  }
-}
-
 resource "google_compute_firewall" "data-i" {
   count     = var.vpc_count
-  name      = "${var.name}-data-i-${count.index}"
+  name      = "${var.name}-n${count.index+2}-i"
   direction = "INGRESS"
   network   = google_compute_network.data_nets[count.index].id
   source_ranges = [
@@ -152,7 +174,7 @@ resource "google_compute_firewall" "data-i" {
 }
 resource "google_compute_firewall" "data-e" {
   count     = var.vpc_count
-  name      = "${var.name}-data-e-${count.index}"
+  name      = "${var.name}-n${count.index+2}-e"
   direction = "EGRESS"
   network   = google_compute_network.data_nets[count.index].id
   allow {
@@ -160,11 +182,11 @@ resource "google_compute_firewall" "data-e" {
   }
 }
 
-resource "google_compute_firewall" "peered-i" {
+resource "google_compute_firewall" "peered-v0-i" {
   count     = var.vpc_count
-  name      = "${var.name}-peered-i-${count.index}"
+  name      = "${var.name}-p${count.index}-v0-i"
   direction = "INGRESS"
-  network   = google_compute_network.peered_nets[count.index].id
+  network   = google_compute_network.peered_net_v0[count.index].id
   source_ranges = [
     "0.0.0.0/0",
   ]
@@ -172,11 +194,11 @@ resource "google_compute_firewall" "peered-i" {
     protocol = "all"
   }
 }
-resource "google_compute_firewall" "peered-e" {
+resource "google_compute_firewall" "peered-v0-e" {
   count     = var.vpc_count
-  name      = "${var.name}-peered-e-${count.index}"
+  name      = "${var.name}-p${count.index}-v0-e"
   direction = "EGRESS"
-  network   = google_compute_network.peered_nets[count.index].id
+  network   = google_compute_network.peered_net_v0[count.index].id
   allow {
     protocol = "all"
   }
@@ -185,22 +207,42 @@ resource "google_compute_firewall" "peered-e" {
 
 
 
-resource "google_compute_network_peering" "data-peered" {
+resource "google_compute_network_peering" "data-peered-v0" {
   count                = var.vpc_count
-  name                 = "${var.name}-data-peer-${count.index}"
+  name                 = "${var.name}-data--p${count.index}-v0"
   network              = google_compute_network.data_nets[count.index].self_link
-  peer_network         = google_compute_network.peered_nets[count.index].self_link
+  peer_network         = google_compute_network.peered_net_v0[count.index].self_link
   export_custom_routes = true
 }
-resource "google_compute_network_peering" "peered-data" {
+resource "google_compute_network_peering" "peered-v0-data" {
   count                = var.vpc_count
-  name                 = "${var.name}-peered-data-${count.index}"
-  network              = google_compute_network.peered_nets[count.index].self_link
+  name                 = "${var.name}-peered${count.index}-v0--data"
+  network              = google_compute_network.peered_net_v0[count.index].self_link
   peer_network         = google_compute_network.data_nets[count.index].self_link
   import_custom_routes = true
 
   depends_on = [
-    google_compute_network_peering.data-peered
+    google_compute_network_peering.data-peered-v0
+  ]
+}
+
+
+resource "google_compute_network_peering" "data-peered-v1" {
+  count                = var.vpc_count
+  name                 = "${var.name}-data--p${count.index}-v1"
+  network              = google_compute_network.data_nets[count.index].self_link
+  peer_network         = google_compute_network.peered_net_v1[count.index].self_link
+  export_custom_routes = true
+}
+resource "google_compute_network_peering" "peered-v1-data" {
+  count                = var.vpc_count
+  name                 = "${var.name}-peered${count.index}-v1--data"
+  network              = google_compute_network.peered_net_v1[count.index].self_link
+  peer_network         = google_compute_network.data_nets[count.index].self_link
+  import_custom_routes = true
+
+  depends_on = [
+    google_compute_network_peering.data-peered-v1
   ]
 }
 

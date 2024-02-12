@@ -54,15 +54,15 @@ resource "google_compute_instance_template" "fw" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.public.id
+    subnetwork = google_compute_subnetwork.public.self_link
   }
   network_interface {
-    subnetwork = google_compute_subnetwork.mgmt.id
+    subnetwork = google_compute_subnetwork.mgmt.self_link
   }
   dynamic "network_interface" {
-    for_each = google_compute_subnetwork.data_subnets
+    for_each = google_compute_subnetwork.data_subnet_fw
     content {
-      subnetwork = network_interface.value["id"]
+      subnetwork = network_interface.value.self_link
     }
   }
 
@@ -73,6 +73,9 @@ resource "google_compute_instance_template" "fw" {
     auto_delete  = true
     boot         = true
   }
+  tags = [
+    "firewalls"
+  ]
   lifecycle {
     create_before_destroy = true
   }
@@ -150,8 +153,8 @@ resource "google_compute_forwarding_rule" "fwdrule" {
   # ip_protocol = "L3_DEFAULT"
   ip_protocol = "TCP"
   network               = google_compute_network.data_nets[count.index].id
-  subnetwork            = google_compute_subnetwork.data_subnets[count.index].id
-  ip_address            = cidrhost(google_compute_subnetwork.data_subnets[count.index].ip_cidr_range, 250)
+  subnetwork            = google_compute_subnetwork.data_subnet_fw[count.index].id
+  ip_address            = cidrhost(google_compute_subnetwork.data_subnet_fw[count.index].ip_cidr_range, 60)
 }
 
 

@@ -1,6 +1,6 @@
-resource "google_compute_instance" "server-a" {
-  count        = var.vpc_count - 1
-  name         = "${var.name}-srv-${count.index+1}-a"
+resource "google_compute_instance" "server-n-s0-a" {
+  count        = var.vpc_count
+  name         = "${var.name}-n${count.index}-s0-a"
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
 
@@ -13,8 +13,8 @@ resource "google_compute_instance" "server-a" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.data_subnets[count.index+1].id
-    network_ip =  cidrhost(google_compute_subnetwork.data_subnets[count.index+1].ip_cidr_range, 80)
+    subnetwork = google_compute_subnetwork.data_subnet_s0[count.index].id
+    network_ip = cidrhost(google_compute_subnetwork.data_subnet_s0[count.index].ip_cidr_range, 16)
   }
 
   tags = [
@@ -23,9 +23,9 @@ resource "google_compute_instance" "server-a" {
 }
 
 
-resource "google_compute_instance" "server-b" {
-  count        = var.vpc_count - 1
-  name         = "${var.name}-srv-${count.index+1}-b"
+resource "google_compute_instance" "server-n-s0-b" {
+  count        = var.vpc_count
+  name         = "${var.name}-n${count.index}-s0-b"
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
 
@@ -38,8 +38,8 @@ resource "google_compute_instance" "server-b" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.data_subnets[count.index+1].id
-    network_ip =  cidrhost(google_compute_subnetwork.data_subnets[count.index+1].ip_cidr_range, 85)
+    subnetwork = google_compute_subnetwork.data_subnet_s0[count.index].self_link
+    network_ip = cidrhost(google_compute_subnetwork.data_subnet_s0[count.index].ip_cidr_range, 17)
   }
 
   tags = [
@@ -48,9 +48,9 @@ resource "google_compute_instance" "server-b" {
 }
 
 
-resource "google_compute_instance" "server-c" {
-  count        = var.vpc_count - 1
-  name         = "${var.name}-srv-${count.index+1}-c"
+resource "google_compute_instance" "server-p-v0-s0" {
+  count        = var.vpc_count
+  name         = "${var.name}-p${count.index}-v0-s0"
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
 
@@ -63,8 +63,8 @@ resource "google_compute_instance" "server-c" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.peered_subnets[count.index+1].id
-    network_ip =  cidrhost(google_compute_subnetwork.peered_subnets[count.index+1].ip_cidr_range, 80)
+    subnetwork = google_compute_subnetwork.peered_subnet_v0_s0[count.index].id
+    network_ip = cidrhost(google_compute_subnetwork.peered_subnet_v0_s0[count.index].ip_cidr_range, 16)
   }
 
   tags = [

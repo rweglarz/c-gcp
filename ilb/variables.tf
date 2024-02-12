@@ -2,11 +2,9 @@ variable "gcp_project" {
   type = string
 }
 
-variable "mgmt_cidr" {
-  type = string
-}
-variable "data_cidr" {
-  type = string
+variable "cidr" {
+  type    = string
+  default = "172.16.0.0/19"
 }
 
 variable "name" {
@@ -17,6 +15,7 @@ variable "name" {
 variable "vpc_count" {
   description = "Number of data vpcs to deploy"
   type = number
+  default = 2
 }
 variable "fw_count" {
   description = "Number of fws to deploy"
