@@ -12,10 +12,10 @@ resource "google_compute_health_check" "ah" {
 }
 resource "google_compute_region_health_check" "fw" {
   name                = "${var.name}-r-healthcheck"
-  check_interval_sec  = 20
-  timeout_sec         = 5
+  check_interval_sec  = 1
   healthy_threshold   = 2
-  unhealthy_threshold = 10
+  unhealthy_threshold = 2
+  timeout_sec         = 1
 
   http_health_check {
     request_path = "/unauth/php/health.php"
