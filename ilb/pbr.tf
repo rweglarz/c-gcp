@@ -19,3 +19,24 @@ resource "google_network_connectivity_policy_based_route" "n2" {
     ]
   }
 }
+
+resource "google_network_connectivity_policy_based_route" "n2-exc-c" {
+  name = "${var.name}-n2-exception-to-c"
+  description = "workloads in n2 exc"
+  network = google_compute_network.data_nets[0].id
+  priority = 90
+
+  filter {
+    protocol_version = "IPV4"
+    ip_protocol = "ALL"
+    src_range = "172.16.2.80"
+    dest_range = "172.16.2.82"
+  }
+  next_hop_other_routes = "DEFAULT_ROUTING"
+
+  virtual_machine {
+    tags = [
+      "workloads-a",
+    ]
+  }
+}
