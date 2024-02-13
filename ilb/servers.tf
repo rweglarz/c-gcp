@@ -68,6 +68,6 @@ resource "google_compute_instance" "server-p-v0-s0" {
   }
 
   tags = [
-    "workloads-c"
+    "workloads-peered"
   ]
 }
