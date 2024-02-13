@@ -5,12 +5,16 @@ resource "google_redis_instance" "this" {
   memory_size_gb = 2
   auth_enabled   = true
 
-  reserved_ip_range = "192.168.0.0/29"
+  reserved_ip_range = var.redis_cidr
 
   authorized_network = google_compute_network.mgmt.id
   
   read_replicas_mode = "READ_REPLICAS_DISABLED"  # explicit
   connect_mode       = "DIRECT_PEERING"          # explicit
+}
+
+output "redis_endpoint" {
+  value     = try("${google_redis_instance.this[0].host}:${google_redis_instance.this[0].port}", null)
 }
 
 output "redis_auth" {

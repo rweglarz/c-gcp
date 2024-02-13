@@ -7,6 +7,11 @@ variable "cidr" {
   default = "172.16.0.0/19"
 }
 
+variable "redis_cidr" {
+  type = string
+  default = "192.168.0.0/29"
+}
+
 variable "name" {
   description = "Name/Prefix of the deployment"
   type = string
