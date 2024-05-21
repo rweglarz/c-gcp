@@ -67,7 +67,7 @@ resource "google_compute_instance_template" "fw" {
   }
 
   disk {
-    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1110"
+    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1112h3"
     #source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle1-1110"
     disk_type    = "pd-ssd"
     auto_delete  = true
