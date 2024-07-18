@@ -1,20 +1,25 @@
 #!/bin/bash
 while true; do
-  if ping -c 5 8.8.8.8 &> /dev/null
+  if ping -c 3 8.8.8.8 &> /dev/null
   then
-    echo "Outbound access avaiable."
+    echo "Outbound access available."
     break
   else
-    echo "Waiting for Outbound access..."
+    echo "Waiting for outbound access..."
     sleep 30
   fi
 done
 
 apt update
-apt -y install hping3 iperf3 nginx net-tools siege
+apt -y install fping hping3 iperf3 nginx net-tools siege
 dd if=/dev/zero of=/var/www/html/10M count=1024 bs=10240
 curl -L https://the.earth.li/~sgtatham/putty/latest/w64/putty.zip -o /var/www/html/putty.zip
 
+cat > /var/www/html/txt << EOF
+<HTML>
+  hello there, my hostname: ${host}
+</HTML>
+EOF
 
 cat > /usr/local/bin/downloads.sh << EOF
 #!/bin/bash

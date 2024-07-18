@@ -4,7 +4,7 @@ resource "google_compute_instance" "server-n-s0-a" {
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
 
-  metadata_startup_script = file("srv_startup.sh")
+  metadata_startup_script = templatefile("srv_startup.sh", { host = "${var.name}-n${count.index}-s0-b" })
 
   boot_disk {
     initialize_params {
@@ -29,7 +29,7 @@ resource "google_compute_instance" "server-n-s0-b" {
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
 
-  metadata_startup_script = file("srv_startup.sh")
+  metadata_startup_script = templatefile("srv_startup.sh", { host = "${var.name}-n${count.index}-s0-b" })
 
   boot_disk {
     initialize_params {
