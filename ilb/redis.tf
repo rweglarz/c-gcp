@@ -3,7 +3,7 @@ resource "google_redis_instance" "this" {
 
   name           = var.name
   memory_size_gb = 2
-  auth_enabled   = true
+  auth_enabled   = var.session_resiliency_auth
 
   reserved_ip_range = var.redis_cidr
 

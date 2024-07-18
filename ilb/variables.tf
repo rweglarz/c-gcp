@@ -70,3 +70,8 @@ variable "session_resiliency" {
   type    = bool
   default = false
 }
+
+variable "session_resiliency_auth" {
+  type    = bool
+  default = true
+}

@@ -32,8 +32,10 @@ resource "google_compute_instance_template" "fw" {
     var.session_resiliency ? {
       "plugin-op-commands" = try(join(",", [var.bootstrap_options_byol["plugin-op-commands"], "set-sess-ress:True"]), "set-sess-ress:True"),
       "redis-endpoint"     = "${google_redis_instance.this[0].host}:${google_redis_instance.this[0].port}",
+    } : {},
+    var.session_resiliency && var.session_resiliency_auth ? {
       "redis-auth"         = google_redis_instance.this[0].auth_string,
-    } : {}
+    } : {},
   )
 
   /*
@@ -67,7 +69,7 @@ resource "google_compute_instance_template" "fw" {
   }
 
   disk {
-    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1112h3"
+    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1114"
     #source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle1-1110"
     disk_type    = "pd-ssd"
     auto_delete  = true
