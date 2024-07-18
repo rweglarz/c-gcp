@@ -97,6 +97,14 @@ resource "google_compute_region_instance_group_manager" "fws" {
     name = "https"
     port = 443
   }
+  named_port {
+    name = "p81"
+    port = 81
+  }
+  named_port {
+    name = "p82"
+    port = 82
+  }
 
   auto_healing_policies {
     health_check      = google_compute_health_check.ah.id
