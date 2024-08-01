@@ -11,6 +11,9 @@ resource "google_compute_instance" "fw" {
   can_ip_forward = true
   metadata = merge(
     var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
+    {
+      vm-auth-key = panos_vm_auth_key.this.auth_key,
+    },
     var.bootstrap_options["common"],
     var.bootstrap_options["fw${count.index}"],
   )

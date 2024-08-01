@@ -18,3 +18,9 @@ terraform {
 provider "panos" {
   json_config_file = "panorama_creds.json"
 }
+
+resource "panos_vm_auth_key" "this" {
+  hours = 24*30*6
+
+  lifecycle { create_before_destroy = true }
+}
