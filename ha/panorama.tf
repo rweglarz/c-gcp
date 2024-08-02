@@ -14,14 +14,11 @@ resource "panos_device_group_parent" "ha" {
   }
 }
 
-resource "panos_panorama_template" "ha" {
-  name = "gcp-ha"
-}
 resource "panos_panorama_template_stack" "ha_fw0" {
   name         = "gcp-ha-fw0"
   default_vsys = "vsys1"
   templates = [
-    panos_panorama_template.ha.name,
+    module.cfg_fw.template_name,
     "vm-ha-ha2-eth1-3",
     "vm common",
   ]
@@ -31,12 +28,73 @@ resource "panos_panorama_template_stack" "ha_fw1" {
   name         = "gcp-ha-fw1"
   default_vsys = "vsys1"
   templates = [
-    panos_panorama_template.ha.name,
+    module.cfg_fw.template_name,
     "vm-ha-ha2-eth1-3",
     "vm common",
   ]
   description = "pat:acp"
 }
+
+
+
+module "cfg_fw" {
+  source = "../../ce-common/modules/pan_vm_template"
+
+  name = "gcp-ha-t"
+
+  interfaces = {
+    "ethernet1/1" = {
+      enable_dhcp               = true
+      create_dhcp_default_route = false
+
+      zone               = "internet"
+      management_profile = "https"
+    }
+    "ethernet1/2" = {
+      enable_dhcp               = true
+      create_dhcp_default_route = false
+
+      zone               = "private"
+      management_profile = "https"
+    }
+    "loopback.1" = {
+      static_ips = [ "${google_compute_forwarding_rule.ext.ip_address}/32" ]
+
+      zone               = "internet"
+      management_profile = "https"
+    }
+    "loopback.2" = {
+      static_ips = [ "${google_compute_forwarding_rule.internal.ip_address}/32" ]
+
+      zone               = "private"
+      management_profile = "https"
+    }
+    "loopback.99" = {
+      static_ips = [ "192.168.1.1/32" ]
+
+      zone               = "private"
+      management_profile = "ping"
+    }
+  }
+  routes = {
+    dg = {
+      destination = "0.0.0.0/0"
+      interface   = "ethernet1/1"
+      type        = "ip-address"
+      next_hop    = cidrhost(google_compute_subnetwork.internet.ip_cidr_range, 1)
+    }
+    i172 = {
+      destination = "172.16.0.0/12"
+      interface   = "ethernet1/2"
+      type        = "ip-address"
+      next_hop    = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 1)
+    }
+  }
+
+  enable_ecmp = true
+}
+
+
 
 resource "panos_panorama_template_variable" "ha_fw0-peer_ip" {
   template_stack = panos_panorama_template_stack.ha_fw0.name
@@ -76,101 +134,11 @@ resource "panos_panorama_template_variable" "ha_fw1-ha2_gw" {
 }
 
 
-resource "panos_panorama_management_profile" "ha_ping" {
-  template = panos_panorama_template.ha.name
-  name     = "ping"
-  ping     = true
-}
-resource "panos_panorama_management_profile" "ha_hc" {
-  template = panos_panorama_template.ha.name
-  name     = "hc"
-  ping     = true
-  http     = true
-  https    = true
-}
-resource "panos_panorama_ethernet_interface" "ha_eth1_1" {
-  template = panos_panorama_template.ha.name
-  name     = "ethernet1/1"
-  vsys     = "vsys1"
-  mode     = "layer3"
-
-  enable_dhcp               = true
-  create_dhcp_default_route = true
-
-  management_profile = panos_panorama_management_profile.ha_hc.name
-}
-resource "panos_panorama_ethernet_interface" "ha_eth1_2" {
-  template = panos_panorama_template.ha.name
-  name     = "ethernet1/2"
-  vsys     = "vsys1"
-  mode     = "layer3"
-
-  enable_dhcp               = true
-  create_dhcp_default_route = false
-
-  management_profile = panos_panorama_management_profile.ha_hc.name
-}
-resource "panos_panorama_loopback_interface" "ha_lo1" {
-  template = panos_panorama_template.ha.name
-  name     = "loopback.1"
-  static_ips = [
-    "${google_compute_forwarding_rule.ext.ip_address}/32",
-  ]
-  management_profile = panos_panorama_management_profile.ha_hc.name
-}
-resource "panos_panorama_loopback_interface" "ha_lo2" {
-  template = panos_panorama_template.ha.name
-  name     = "loopback.2"
-  static_ips = [
-    "${google_compute_forwarding_rule.internal.ip_address}/32",
-  ]
-  management_profile = panos_panorama_management_profile.ha_hc.name
-}
-
-resource "panos_panorama_loopback_interface" "ha_lo99" {
-  template = panos_panorama_template.ha.name
-  name     = "loopback.99"
-  static_ips = [
-    "192.168.1.1/32",
-  ]
-  management_profile = panos_panorama_management_profile.ha_ping.name
-}
-
-
-
-resource "panos_virtual_router" "ha_vr1" {
-  name     = "vr1"
-  template = panos_panorama_template.ha.name
-
-  enable_ecmp           = true
-  ecmp_symmetric_return = true
-  ecmp_max_path         = 4
-
-  interfaces = [
-    panos_panorama_ethernet_interface.ha_eth1_1.name,
-    panos_panorama_ethernet_interface.ha_eth1_2.name,
-    panos_panorama_loopback_interface.ha_lo1.name,
-    panos_panorama_loopback_interface.ha_lo2.name,
-    panos_panorama_loopback_interface.ha_lo99.name,
-  ]
-}
-
-resource "panos_panorama_static_route_ipv4" "ha_vr1_172" {
-  template       = panos_panorama_template.ha.name
-  virtual_router = panos_virtual_router.ha_vr1.name
-  name           = "internal"
-  destination    = "172.16.0.0/12"
-  interface      = panos_panorama_ethernet_interface.ha_eth1_2.name
-  next_hop       = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 1)
-}
-
-
 locals {
   lb_hc = [
     "35.191.0.0/16",
-    "130.211.0.0/22",
-    #    "209.85.152.0/22",
-    #    "209.85.204.0/22",
+    "209.85.152.0/22",
+    "209.85.204.0/22",
   ]
   int_nh = [
     {
@@ -196,32 +164,12 @@ locals {
 
 resource "panos_panorama_static_route_ipv4" "ha_vr1_25_191" {
   for_each       = { for r in local.lb_hc_routes : r.n => r }
-  template       = panos_panorama_template.ha.name
-  virtual_router = panos_virtual_router.ha_vr1.name
+  template       = module.cfg_fw.template_name
+  virtual_router = module.cfg_fw.vr_name
   name           = each.key
   destination    = each.value.dst
   interface      = each.value.int
   next_hop       = each.value.nh
-}
-
-resource "panos_zone" "ha_internet" {
-  template = panos_panorama_template.ha.name
-  name     = "internet"
-  mode     = "layer3"
-  interfaces = [
-    panos_panorama_ethernet_interface.ha_eth1_1.name,
-    panos_panorama_loopback_interface.ha_lo1.name,
-  ]
-}
-resource "panos_zone" "ha_private" {
-  template = panos_panorama_template.ha.name
-  name     = "private"
-  mode     = "layer3"
-  interfaces = [
-    panos_panorama_ethernet_interface.ha_eth1_2.name,
-    panos_panorama_loopback_interface.ha_lo2.name,
-    panos_panorama_loopback_interface.ha_lo99.name,
-  ]
 }
 
 
@@ -240,8 +188,8 @@ resource "panos_panorama_nat_rule_group" "ha_pre_nat" {
   rule {
     name = "default outbound snat"
     original_packet {
-      source_zones          = [panos_zone.ha_private.name]
-      destination_zone      = panos_zone.ha_internet.name
+      source_zones          = ["private"]
+      destination_zone      = "internet"
       source_addresses      = ["172.16.0.0/12"]
       destination_addresses = ["any"]
 
@@ -250,7 +198,7 @@ resource "panos_panorama_nat_rule_group" "ha_pre_nat" {
       source {
         dynamic_ip_and_port {
           interface_address {
-            interface = panos_panorama_loopback_interface.ha_lo1.name
+            interface = "loopback.1"
           }
         }
       }
@@ -261,8 +209,8 @@ resource "panos_panorama_nat_rule_group" "ha_pre_nat" {
   rule {
     name = "inbound srv0"
     original_packet {
-      source_zones          = [panos_zone.ha_internet.name]
-      destination_zone      = panos_zone.ha_internet.name
+      source_zones          = ["internet"]
+      destination_zone      = "internet"
       source_addresses      = ["any"]
       destination_addresses = [google_compute_forwarding_rule.ext.ip_address]
       service               = panos_panorama_service_object.ha_ssh_22.name
@@ -286,10 +234,10 @@ resource "panos_security_rule_group" "ha_pre_sec" {
   device_group = panos_device_group.ha.name
   rule {
     name                  = "outbound"
-    source_zones          = [panos_zone.ha_private.name]
+    source_zones          = ["private"]
     source_addresses      = ["any"]
     source_users          = ["any"]
-    destination_zones     = [panos_zone.ha_internet.name]
+    destination_zones     = ["internet"]
     destination_addresses = ["any"]
     applications          = ["any"]
     services              = ["application-default"]
@@ -299,10 +247,10 @@ resource "panos_security_rule_group" "ha_pre_sec" {
   }
   rule {
     name                  = "inbound srv0"
-    source_zones          = [panos_zone.ha_internet.name]
+    source_zones          = ["internet"]
     source_addresses      = [var.test_client_ip]
     source_users          = ["any"]
-    destination_zones     = [panos_zone.ha_private.name]
+    destination_zones     = ["private"]
     destination_addresses = [google_compute_forwarding_rule.ext.ip_address]
     applications          = ["any"]
     services              = [panos_panorama_service_object.ha_ssh_22.name]
