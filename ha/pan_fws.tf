@@ -2,6 +2,12 @@ resource "random_id" "server" {
   byte_length = 3
 }
 
+resource "google_compute_address" "fw_mgmt" {
+  count  = 2
+  name   = "${var.name}-fw-mgmt-${count.index}"
+  region = google_compute_subnetwork.mgmt.region
+}
+
 resource "google_compute_instance" "fw" {
   count        = 2
   name         = "${var.name}-fw${count.index}-${random_id.server.hex}"
@@ -45,7 +51,7 @@ resource "google_compute_instance" "fw" {
     subnetwork = google_compute_subnetwork.mgmt.id
     network_ip = cidrhost(google_compute_subnetwork.mgmt.ip_cidr_range, 5 + count.index)
     access_config {
-      // Ephemeral public IP
+      nat_ip = google_compute_address.fw_mgmt[count.index].address
     }
   }
   network_interface {
