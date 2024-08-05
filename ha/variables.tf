@@ -23,6 +23,11 @@ variable "zones" {
   ]
 }
 
+variable "srv_type" {
+  type    = string
+  default = "e2-micro"
+}
+
 variable "machine_type" {
   type    = string
   default = "n2-standard-4"

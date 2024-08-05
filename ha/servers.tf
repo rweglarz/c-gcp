@@ -5,7 +5,7 @@ data "google_compute_image" "ubuntu" {
 
 resource "google_compute_instance" "srv0" {
   name         = "${var.name}-srv0"
-  machine_type = "f1-micro"
+  machine_type = var.srv_type
   zone         = var.zones[0]
 
   metadata = merge(
@@ -29,7 +29,7 @@ resource "google_compute_instance" "srv0" {
 
 resource "google_compute_instance" "srv1" {
   name         = "${var.name}-srv-1"
-  machine_type = "f1-micro"
+  machine_type = var.srv_type
   zone         = var.zones[1]
 
   metadata = merge(
