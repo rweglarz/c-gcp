@@ -126,3 +126,7 @@ variable "ssh_key_path" {
   type = string
   default = ""
 }
+
+variable "vpn_psk" {
+  type = string
+}

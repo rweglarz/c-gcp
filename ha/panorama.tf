@@ -75,6 +75,14 @@ module "cfg_fw" {
       zone               = "private"
       management_profile = "ping"
     }
+    "tunnel.10" = {
+      static_ips = [ "192.168.255.100/32" ]
+      zone = "vpn-linux-0"
+    }
+    "tunnel.11" = {
+      static_ips = [ "192.168.255.110/32" ]
+      zone = "vpn-linux-1"
+    }
   }
   routes = {
     dg = {
@@ -83,8 +91,20 @@ module "cfg_fw" {
       type        = "ip-address"
       next_hop    = cidrhost(google_compute_subnetwork.internet.ip_cidr_range, 1)
     }
+    i10 = {
+      destination = "10.0.0.0/8"
+      interface   = "ethernet1/2"
+      type        = "ip-address"
+      next_hop    = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 1)
+    }
     i172 = {
       destination = "172.16.0.0/12"
+      interface   = "ethernet1/2"
+      type        = "ip-address"
+      next_hop    = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 1)
+    }
+    i192 = {
+      destination = "192.168.0.0/16"
       interface   = "ethernet1/2"
       type        = "ip-address"
       next_hop    = cidrhost(google_compute_subnetwork.internal.ip_cidr_range, 1)
@@ -161,6 +181,47 @@ locals {
     ]
   ])
 }
+
+
+
+module "tunnel-linux" {
+  source = "../../ce-common/modules/pan_tunnel"
+  count  = 2
+
+  peers = {
+    left = {
+      name = "fw"
+      ip   = google_compute_forwarding_rule.ext.ip_address
+      interface = {
+        phys   = "loopback.1"
+        tunnel = count.index==0 ? "tunnel.10" : "tunnel.11"
+      }
+      id = {
+        type  = "ipaddr"
+        value = google_compute_forwarding_rule.ext.ip_address
+      }
+      template = module.cfg_fw.template_name
+    }
+    right = {
+      name = "linux${count.index}"
+      ip   = google_compute_address.linux[count.index].address
+      interface = {
+        phys   = "loopback.1"
+        tunnel = count.index==0 ? "tunnel.10" : "tunnel.11"
+      }
+      id = {
+        type  = "ipaddr"
+        value = google_compute_address.linux[count.index].address
+      }
+      template = module.cfg_fw.template_name
+      do_not_configure = true
+    }
+  }
+  psk = var.vpn_psk
+}
+
+
+
 
 resource "panos_panorama_static_route_ipv4" "ha_vr1_25_191" {
   for_each       = { for r in local.lb_hc_routes : r.n => r }
@@ -260,5 +321,31 @@ resource "panos_security_rule_group" "ha_pre_sec" {
   }
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "panos_panorama_pbf_rule_group" "ha" {
+  device_group = panos_device_group.ha.name
+  rule {
+    name = "linux inbound"
+    source {
+      interfaces = [
+        "tunnel.10",
+        "tunnel.11",
+      ]
+      addresses = ["any"]
+      users     = ["any"]
+    }
+    destination {
+      addresses    = ["any"]
+      applications = ["any"]
+      services     = ["any"]
+    }
+    forwarding {
+      action = "no-pbf"
+      symmetric_return {
+        enable = true
+      }
+    }
   }
 }
