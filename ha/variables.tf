@@ -30,7 +30,7 @@ variable "machine_type" {
 
 variable "fw_image" {
   type    = string
-  default = "flex-byol-1019"
+  default = "flex-byol-1114"
 }
 
 variable "mgmt_ips" {
