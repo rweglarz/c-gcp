@@ -294,6 +294,21 @@ resource "panos_panorama_nat_rule_group" "ha_pre_nat" {
 resource "panos_security_rule_group" "ha_pre_sec" {
   device_group = panos_device_group.ha.name
   rule {
+    name                  = "ipsec"
+    source_zones          = ["internet"]
+    source_addresses      = ["any"]
+    source_users          = ["any"]
+    destination_zones     = ["internet"]
+    destination_addresses = ["any"]
+    applications          = ["ipsec", "ping"]
+    services              = ["application-default"]
+    categories            = ["any"]
+    action                = "allow"
+    log_setting           = var.log_forwarding
+    log_start             = true
+    log_end               = true
+  }
+  rule {
     name                  = "outbound"
     source_zones          = ["private"]
     source_addresses      = ["any"]
