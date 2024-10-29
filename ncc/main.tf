@@ -12,6 +12,9 @@ terraform {
     panos = {
       source = "PaloAltoNetworks/panos"
     }
+    google = {
+      version = "~> 6.9"
+    }
   }
 }
 

@@ -145,11 +145,6 @@ variable "bootstrap_options" {
 
 }
 
-variable "pl-mgmt-csp_nat_ips" {
-  type        = string
-  description = "prefix list for aws sg"
-}
-
 variable "dns_zone" {
   type    = string
   default = "w-gcp"
@@ -195,4 +190,8 @@ variable "global_services" {
     s1 = "8081",
     s2 = "8082",
   }
+}
+
+variable "gcp_panorama_vpc_id" {
+  default = null
 }
