@@ -13,6 +13,7 @@ resource "google_compute_instance" "fwp" {
     var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
     var.bootstrap_options["common"],
     {
+      vm-auth-key = panos_vm_auth_key.this.auth_key
       dgname  = panos_device_group.ncc_r[each.key].name
       tplname = panos_panorama_template_stack.fwp[each.key].name
     }
@@ -69,6 +70,7 @@ resource "google_compute_instance" "fws" {
     var.ssh_key_path != "" ? { ssh-keys = "admin:${file(var.ssh_key_path)}" } : {},
     var.bootstrap_options["common"],
     {
+      vm-auth-key = panos_vm_auth_key.this.auth_key
       dgname  = panos_device_group.ncc_r[each.key].name
       tplname = panos_panorama_template_stack.fws[each.key].name
     }
