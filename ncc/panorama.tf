@@ -309,6 +309,21 @@ resource "panos_panorama_nat_rule_group" "ncc_pre_nat" {
     }
   }
   rule {
+    name = "default nonat"
+    original_packet {
+      source_zones          = ["internal"]
+      destination_zone      = "internet"
+      source_addresses      = ["172.16.0.0/12"]
+      destination_addresses = ["172.16.0.0/12"]
+    }
+    translated_packet {
+      source {
+      }
+      destination {
+      }
+    }
+  }
+  rule {
     name = "default outbound snat"
     original_packet {
       source_zones          = ["internal"]
