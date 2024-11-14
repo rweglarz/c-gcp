@@ -21,26 +21,6 @@ resource "google_network_connectivity_spoke" "test1" {
   }
 }
 
-resource "google_compute_firewall" "test1" {
-  name      = "${var.name}-test1"
-  network   = google_compute_network.test1.id
-  direction = "INGRESS"
-  source_ranges = concat(
-    [
-      "10.0.0.0/8",
-      "172.16.0.0/12",
-      "192.168.0.0/16",
-    ],
-    [for r in var.mgmt_ips : r.cidr],
-    [for r in var.gcp_ips  : r.cidr],
-    [for r in var.tmp_ips  : r.cidr],
-  )
-  allow {
-    protocol = "all"
-  }
-}
-
-
 
 resource "google_compute_network" "test2" {
   name = "${var.name}-test2"
@@ -62,25 +42,6 @@ resource "google_network_connectivity_spoke" "test2" {
   location = "global"
   linked_vpc_network {
     uri = google_compute_network.test2.self_link
-  }
-}
-
-resource "google_compute_firewall" "test2" {
-  name      = "${var.name}-test2"
-  network   = google_compute_network.test2.id
-  direction = "INGRESS"
-  source_ranges = concat(
-    [
-      "10.0.0.0/8",
-      "172.16.0.0/12",
-      "192.168.0.0/16",
-    ],
-    [for r in var.mgmt_ips : r.cidr],
-    [for r in var.gcp_ips  : r.cidr],
-    [for r in var.tmp_ips  : r.cidr],
-  )
-  allow {
-    protocol = "all"
   }
 }
 
