@@ -28,6 +28,9 @@ resource "google_compute_instance_template" "fw" {
   machine_type   = var.fw_machine_type
   can_ip_forward = true
   metadata       = merge(
+    {
+      vm-auth-key = panos_vm_auth_key.this.auth_key
+    },
     var.bootstrap_options_byol,
     var.session_resiliency ? {
       "plugin-op-commands" = try(join(",", [var.bootstrap_options_byol["plugin-op-commands"], "set-sess-ress:True"]), "set-sess-ress:True"),
