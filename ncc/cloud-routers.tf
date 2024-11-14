@@ -31,6 +31,7 @@ resource "google_compute_router" "internal" {
   region   = each.key
   bgp {
     asn               = var.asn.ncc_internal
+    # advertise_mode    = "DEFAULT"
     advertise_mode    = "CUSTOM"
     advertised_groups = ["ALL_SUBNETS"]
     advertised_ip_ranges {
