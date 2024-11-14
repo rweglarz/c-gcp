@@ -9,6 +9,14 @@ provider "google-beta" {
   project = var.gcp_project
 }
 
+terraform {
+  required_providers {
+    google = {
+      version = "~> 6.9"
+    }
+  }
+}
+
 resource "random_id" "this" {
   byte_length = 5
 }

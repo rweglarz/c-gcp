@@ -137,7 +137,8 @@ resource "google_compute_region_backend_service" "bsvc" {
   session_affinity      = "CLIENT_IP"
   network               = google_compute_network.data_nets[count.index].id
   backend {
-    group = google_compute_region_instance_group_manager.fws.instance_group
+    group          = google_compute_region_instance_group_manager.fws.instance_group
+    balancing_mode = "CONNECTION"
   }
   /*
   backend {
