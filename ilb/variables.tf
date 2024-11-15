@@ -75,3 +75,7 @@ variable "session_resiliency_auth" {
   type    = bool
   default = true
 }
+
+variable "gcp_panorama_vpc_id" {
+  default = null
+}
