@@ -8,7 +8,7 @@ variable "region" {
 
 variable "cidr" {
   type    = string
-  default = "172.16.0.0/19"
+  default = "172.16.0.0/16"
 }
 
 variable "redis_cidr" {
@@ -83,3 +83,29 @@ variable "session_resiliency_auth" {
 variable "gcp_panorama_vpc_id" {
   default = null
 }
+
+variable "gcp_ips" {
+  type = list(map(string))
+  default = [
+    {
+      cidr        = "130.211.0.0/22"
+      description = ""
+    },
+    {
+      cidr        = "35.191.0.0/16"
+      description = ""
+    },
+    {
+      cidr        = "35.235.240.0/20"
+      description = ""
+    },
+    {
+      cidr        = "209.85.152.0/22"
+      description = ""
+    },
+    {
+      cidr        = "209.85.204.0/22"
+      description = ""
+    },
+  ]
+} 

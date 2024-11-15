@@ -59,15 +59,15 @@ resource "google_compute_instance_template" "fw" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.public.self_link
+    subnetwork = google_compute_subnetwork.public.id
   }
   network_interface {
-    subnetwork = google_compute_subnetwork.mgmt.self_link
+    subnetwork = google_compute_subnetwork.mgmt.id
   }
   dynamic "network_interface" {
-    for_each = google_compute_subnetwork.data_subnet_fw
+    for_each = google_compute_subnetwork.private
     content {
-      subnetwork = network_interface.value.self_link
+      subnetwork = network_interface.value.id
     }
   }
 
@@ -130,15 +130,16 @@ resource "google_compute_region_instance_group_manager" "fws" {
 
 
 
-resource "google_compute_region_backend_service" "bsvc" {
+resource "google_compute_region_backend_service" "fws" {
+  for_each = google_compute_network.private
+
   provider              = google-beta
-  count                 = var.vpc_count
-  name                  = "${var.name}-bsvc-${count.index}"
+  name                  = "${var.name}-bsvc-fws-${each.key}"
   protocol              = "UNSPECIFIED"
   load_balancing_scheme = "INTERNAL"
   health_checks         = [google_compute_region_health_check.fw.id]
   session_affinity      = "CLIENT_IP"
-  network               = google_compute_network.data_nets[count.index].id
+  network               = each.value.id
   backend {
     group          = google_compute_region_instance_group_manager.fws.instance_group
     balancing_mode = "CONNECTION"
@@ -157,27 +158,27 @@ resource "google_compute_region_backend_service" "bsvc" {
   }
 }
 
-resource "google_compute_forwarding_rule" "fwdrule" {
-  count                 = var.vpc_count
-  name                  = "${var.name}-fwdrule-${count.index}"
-  backend_service       = google_compute_region_backend_service.bsvc[count.index].id
+resource "google_compute_forwarding_rule" "private" {
+  for_each = google_compute_network.private
+  name                  = "${var.name}-fwdrule-${each.key}"
+  backend_service       = google_compute_region_backend_service.fws[each.key].id
   load_balancing_scheme = "INTERNAL"
   #ports                 = ["80"]
   all_ports = true
   # ip_protocol = "L3_DEFAULT"
   ip_protocol = "TCP"
-  network               = google_compute_network.data_nets[count.index].id
-  subnetwork            = google_compute_subnetwork.data_subnet_fw[count.index].id
-  ip_address            = cidrhost(google_compute_subnetwork.data_subnet_fw[count.index].ip_cidr_range, 60)
+  network               = google_compute_network.private[each.key].id
+  subnetwork            = google_compute_subnetwork.private[each.key].id
+  ip_address            = cidrhost(google_compute_subnetwork.private[each.key].ip_cidr_range, 5)
 }
 
 
 resource "google_compute_route" "route" {
-  count        = var.vpc_count
-  name         = "${var.name}-dg-${count.index}"
+  for_each = google_compute_network.private
+  name         = "${var.name}-dg-${each.key}"
   dest_range   = "0.0.0.0/0"
-  network      = google_compute_network.data_nets[count.index].id
-  next_hop_ilb = google_compute_forwarding_rule.fwdrule[count.index].ip_address
+  network      = google_compute_network.private[each.key].id
+  next_hop_ilb = google_compute_forwarding_rule.private[each.key].ip_address
   #next_hop_ilb = google_compute_forwarding_rule.fwdrule[count.index].self_link
   priority     = 10
   # tags = [
