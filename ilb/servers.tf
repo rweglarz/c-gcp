@@ -6,6 +6,7 @@ resource "google_compute_instance" "servers" {
     peer-a-a-1     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-a"], tags = [ "workloads-pbr" ] }
     peer-a-a-2     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-b"], tags = [ "workloads-pbr" ] }
     vpnpeer-a-a-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-a"] }
+    vpnpeer-a-b-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-b"] }
   }
   name         = "${var.name}-${each.key}"
   machine_type = var.srv_machine_type
