@@ -102,11 +102,6 @@ variable "bootstrap_options" {
 
 }
 
-variable "pl-mgmt-csp_nat_ips" {
-  type    = string
-  description = "prefix list for aws sg"
-}
-
 variable "dns_zone" {
   type    = string
   default = "w-gcp"
@@ -129,4 +124,8 @@ variable "ssh_key_path" {
 
 variable "vpn_psk" {
   type = string
+}
+
+variable "gcp_panorama_vpc_id" {
+  default = null
 }
