@@ -20,9 +20,11 @@ resource "google_compute_region_backend_service" "internal" {
   network               = google_compute_network.internal.id
   backend {
     group = google_compute_instance_group.fws[0].id
+    balancing_mode               = "CONNECTION"
   }
   backend {
     group = google_compute_instance_group.fws[1].id
+    balancing_mode               = "CONNECTION"
   }
   connection_tracking_policy {
     tracking_mode                                = "PER_SESSION"
@@ -51,9 +53,11 @@ resource "google_compute_region_backend_service" "ext" {
   session_affinity      = "CLIENT_IP"
   backend {
     group = google_compute_instance_group.fws[0].id
+    balancing_mode               = "CONNECTION"
   }
   backend {
     group = google_compute_instance_group.fws[1].id
+    balancing_mode               = "CONNECTION"
   }
   connection_tracking_policy {
     tracking_mode                                = "PER_SESSION"
