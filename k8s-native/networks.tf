@@ -32,11 +32,18 @@ resource "google_compute_router" "k8s" {
   network = google_compute_network.k8s.id
 }
 
+resource "google_compute_address" "k8s" {
+  name   = "${var.name}-rtr-k8s-nat-ip"
+  region = google_compute_subnetwork.k8s.region
+}
+
 resource "google_compute_router_nat" "k8s_nat" {
   name   = "${var.name}-rtr-k8s"
   router = google_compute_router.k8s.name
 
-  nat_ip_allocate_option = "AUTO_ONLY"
+  nat_ip_allocate_option = "MANUAL_ONLY"
+  nat_ips                = [google_compute_address.k8s.self_link]
+
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   log_config {
     enable = true

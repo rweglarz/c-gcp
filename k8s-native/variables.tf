@@ -1,6 +1,6 @@
 variable "name" {
   type    = string
-  default = ""
+  default = "rwe-k8s-native"
 }
 
 variable "cid" {
@@ -34,12 +34,6 @@ variable "dns_zone" {
   type    = string
   default = "w-gcp"
 }
-
-variable "pl-mgmt-csp_nat_ips" {
-  type        = string
-  description = "prefix list for aws sg"
-}
-
 
 variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
@@ -96,4 +90,8 @@ variable "nodes" {
       2 = {}
     }
   }
+}
+
+variable "gcp_panorama_vpc_id" {
+  default = null
 }

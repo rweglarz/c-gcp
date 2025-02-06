@@ -8,3 +8,12 @@ provider "google-beta" {
   project = var.project
   zone    = var.zone
 }
+
+
+terraform {
+  required_providers {
+    google = {
+      version = "~> 6.19"
+    }
+  }
+}
