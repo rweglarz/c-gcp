@@ -1,17 +1,19 @@
 resource "google_network_security_intercept_endpoint_group" "this" {
   provider                    = google.consumerp
-  intercept_endpoint_group_id = "eg"
 
+  intercept_endpoint_group_id = "eg"
   location                   = "global"
   intercept_deployment_group = google_network_security_intercept_deployment_group.this.id
 }
 
 resource "google_network_security_intercept_endpoint_group_association" "this" {
-  provider                                = google.consumer
-  intercept_endpoint_group_association_id = "ega"
+  for_each = google_compute_network.client
+  provider = google.consumer
+
+  intercept_endpoint_group_association_id = "ega-${each.key}"
 
   location                 = "global"
-  network                  = google_compute_network.client.id
+  network                  = each.value.id
   intercept_endpoint_group = google_network_security_intercept_endpoint_group.this.id
 }
 
@@ -98,11 +100,11 @@ resource "google_compute_network_firewall_policy" "network" {
 }
 
 resource "google_compute_network_firewall_policy_association" "network" {
+  for_each = google_compute_network.client
   provider = google.consumer
-  name     = "network"
 
-
-  attachment_target = google_compute_network.client.id
+  name              = "network-${each.key}"
+  attachment_target = each.value.id
   firewall_policy   = google_compute_network_firewall_policy.network.id
 }
 

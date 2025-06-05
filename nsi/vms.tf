@@ -1,8 +1,7 @@
 resource "google_compute_instance" "servers" {
+  for_each = google_compute_subnetwork.client
   provider = google.consumer
-  for_each = {
-    client-1 = { subnetwork = google_compute_subnetwork.client }
-  }
+
   name                      = "${var.name}-${each.key}"
   machine_type              = var.srv_machine_type
   allow_stopping_for_update = true
@@ -14,7 +13,7 @@ resource "google_compute_instance" "servers" {
   }
 
   network_interface {
-    subnetwork = each.value.subnetwork.id
+    subnetwork = each.value.id
     access_config {}
   }
 }
