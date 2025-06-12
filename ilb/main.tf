@@ -7,11 +7,13 @@ provider "google" {
   region  = "europe-west1"
   zone    = "europe-west1-b"
   project = var.gcp_project
+  add_terraform_attribution_label = false
 }
 provider "google-beta" {
   region  = "europe-west1"
   zone    = "europe-west1-b"
   project = var.gcp_project
+  add_terraform_attribution_label = false
 }
 
 terraform {
