@@ -43,12 +43,6 @@ variable "srv_machine_type"{
 variable "bootstrap_options" {
   type = map
 }
-variable "bootstrap_options_byol" {
-  type = map
-}
-variable "bootstrap_options_paygo" {
-  type = map
-}
 
 variable "ssh_key" {
   type = string
@@ -82,6 +76,17 @@ variable "session_resiliency_auth" {
 
 variable "gcp_panorama_vpc_id" {
   default = null
+}
+
+variable "payg" {
+  type    = bool
+  default = false
+}
+
+variable "airs" {
+  type    = bool
+  default = false
+  
 }
 
 variable "gcp_ips" {

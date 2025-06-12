@@ -23,23 +23,43 @@ resource "google_compute_region_health_check" "fw" {
   }
 }
 
-resource "google_compute_instance_template" "fw" {
-  name_prefix    = var.name
-  machine_type   = var.fw_machine_type
-  can_ip_forward = true
-  metadata       = merge(
+locals {
+  bootstrap_options_airs = merge(
+    var.bootstrap_options.common,
+    var.bootstrap_options.airs,
+
+  )
+  bootstrap_options_vm = merge(
+    var.bootstrap_options.common,
+    var.payg==false ? var.bootstrap_options.vm_byol : var.bootstrap_options.vm_payg,
     {
       vm-auth-key = panos_vm_auth_key.this.auth_key
     },
-    var.bootstrap_options_byol,
+  )
+  bootstrap_options_s1 = var.airs ? local.bootstrap_options_airs : local.bootstrap_options_vm
+  bootstrap_options = merge(
+    local.bootstrap_options_s1,
     var.session_resiliency ? {
-      "plugin-op-commands" = try(join(",", [var.bootstrap_options_byol["plugin-op-commands"], "set-sess-ress:True"]), "set-sess-ress:True"),
+      "plugin-op-commands" = try(join(",", [local.bootstrap_options_s1["plugin-op-commands"], "set-sess-ress:True"]), "set-sess-ress:True"),
       "redis-endpoint"     = "${google_redis_instance.this[0].host}:${google_redis_instance.this[0].port}",
     } : {},
     var.session_resiliency && var.session_resiliency_auth ? {
       "redis-auth"         = google_redis_instance.this[0].auth_string,
     } : {},
   )
+  source_image = coalesce(
+    var.airs ? "projects/paloaltonetworksgcp-public/global/images/ai-runtime-security-byol-1125h1" : null,
+    var.payg ? "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle2-1126" : null,
+    "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1126"
+  )
+
+}
+
+resource "google_compute_instance_template" "fw" {
+  name_prefix    = var.name
+  machine_type   = var.fw_machine_type
+  can_ip_forward = true
+  metadata       = local.bootstrap_options
 
   /*
   service_account {
@@ -72,8 +92,7 @@ resource "google_compute_instance_template" "fw" {
   }
 
   disk {
-    source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1114"
-    #source_image = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle1-1110"
+    source_image = local.source_image
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
