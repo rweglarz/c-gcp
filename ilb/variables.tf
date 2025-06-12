@@ -53,12 +53,6 @@ variable "mgmt_ips" {
   type = list(map(string))
 }
 
-
-variable "pl-mgmt-csp_nat_ips" {
-  type = string
-  default = "pl-029b5d80e69d9bc9e"
-}
-
 variable "dns_zone" {
   type    = string
   default = "w-gcp"
