@@ -1,5 +1,5 @@
-resource "google_compute_firewall" "pan" {
-  name      = "lab-${var.name}-pan-i"
+resource "google_compute_firewall" "panorama" {
+  name      = "lab-${var.name}-panorama-i"
   project   = var.gcp_project
   network   = var.gcp_panorama_vpc_id
   direction = "INGRESS"
