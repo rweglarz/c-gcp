@@ -1,13 +1,13 @@
 resource "google_compute_health_check" "ah" {
   name                = "${var.name}-g-auto-heal-php-login"
-  check_interval_sec  = 240
+  check_interval_sec  = 300
   timeout_sec         = 5
-  healthy_threshold   = 6
+  healthy_threshold   = 2
   unhealthy_threshold = 10
 
   http_health_check {
     request_path = "/php/login.php"
-    port         = "80"
+    port         = "54321"
   }
 }
 resource "google_compute_region_health_check" "fw" {
@@ -19,7 +19,7 @@ resource "google_compute_region_health_check" "fw" {
 
   http_health_check {
     request_path = "/unauth/php/health.php"
-    port         = "80"
+    port         = "54321"
   }
 }
 
