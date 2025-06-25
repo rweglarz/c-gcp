@@ -18,6 +18,7 @@ variable "mgmt_ips" {
   type        = list(map(string))
 }
 
-variable "pl-mgmt-csp_nat_ips" {
-  type = string
+variable "gcp_panorama_vpc_id" {
+  default = null
 }
+
