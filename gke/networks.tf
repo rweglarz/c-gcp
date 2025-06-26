@@ -34,3 +34,18 @@ resource "google_compute_router_nat" "gke" {
     filter = "ERRORS_ONLY"
   }
 }
+
+resource "google_compute_firewall" "iap" {
+  name      = "${var.name}-iap-i"
+  network   = google_compute_network.gke.id
+  direction = "INGRESS"
+  source_ranges = concat(
+    [
+      "35.235.240.0/20",
+    ],
+  )
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+}
