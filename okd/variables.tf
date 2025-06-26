@@ -30,8 +30,7 @@ variable "vpn_psk" {
   type = string
 }
 
-variable "pl-mgmt-csp_nat_ips" {
-  type        = string
-  description = "prefix list for aws sg"
+variable "gcp_panorama_vpc_id" {
+  default = null
 }
 

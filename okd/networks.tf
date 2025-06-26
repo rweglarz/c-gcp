@@ -82,25 +82,25 @@ resource "google_compute_network_peering" "okd-transit" {
 }
 
 
-resource "google_compute_address" "okd" {
-  name   = "${var.name}-rtr-okd"
+resource "google_compute_address" "nat" {
+  name   = "${var.name}-rtr-nat"
   region = var.region
 }
 
-resource "google_compute_router" "okd" {
-  name     = "${var.name}-rtr-okd"
+resource "google_compute_router" "nat" {
+  name     = "${var.name}-rtr-nat"
   network  = google_compute_network.okd.name
 
 }
 
-resource "google_compute_router_nat" "okd" {
+resource "google_compute_router_nat" "nat" {
   name     = "${var.name}-okd-snat"
-  router   = google_compute_router.okd.name
+  router   = google_compute_router.nat.name
   region   = var.region
 
   nat_ip_allocate_option = "MANUAL_ONLY"
   nat_ips                = [
-    google_compute_address.okd.self_link
+    google_compute_address.nat.self_link
   ]
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
   log_config {
