@@ -31,11 +31,11 @@ module "ngfw" {
 
   network_interfaces = [
     {
-      subnetwork       = google_compute_subnetwork.this["mgmt"].id
+      subnetwork       = google_compute_subnetwork.this["mgmt"].self_link
       create_public_ip = false
     },
     {
-      subnetwork       = google_compute_subnetwork.this["private"].id
+      subnetwork       = google_compute_subnetwork.this["private"].self_link
       create_public_ip = false
     },
   ]
