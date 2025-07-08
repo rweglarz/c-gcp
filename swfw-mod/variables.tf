@@ -46,14 +46,22 @@ variable "ngfw_service_accont_roles" {
 
 variable "bootstrap_options" {
   # default = {
-  # serial-port-enable          = true
-  # dhcp-accept-server-hostname = "yes"
-  # panorama-server             = "cloud"
-  # plugin-op-commands          = "advance-routing:enable"
-  # dgname                      = "folder"
-  # authcodes                   = "D0000000"
-  # vm-series-auto-registration-pin-id    = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-  # vm-series-auto-registration-pin-value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  #   common = {
+  #     serial-port-enable          = true
+  #     dhcp-accept-server-hostname = "yes"
+  #     panorama-server             = "cloud"
+  #     plugin-op-commands          = "advance-routing:enable"
+  #     authcodes                   = "D0000000"
+  #     vm-series-auto-registration-pin-id    = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+  #     vm-series-auto-registration-pin-value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  #   }
+  #   airs = {
+  #     dgname             = "folder_airs"
+  #   }
+  #   tc = {
+  #     dgname             = "folder_tc"
+  #     plugin-op-commands = "tag_collector_mode_flag:enable"
+  #   }
   # }
 }
 

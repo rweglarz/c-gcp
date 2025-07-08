@@ -40,7 +40,10 @@ module "ngfw" {
     },
   ]
 
-  metadata = var.bootstrap_options
+  metadata = merge(
+    var.bootstrap_options.common,
+    var.bootstrap_options.airs,
+  )
 }
 
 module "lb_internal" {
