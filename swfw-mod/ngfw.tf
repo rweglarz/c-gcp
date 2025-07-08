@@ -20,6 +20,7 @@ module "ngfw" {
   machine_type          = var.machine_type
   min_vmseries_replicas = var.ngfw_replicas
   max_vmseries_replicas = var.ngfw_replicas
+  create_pubsub_topic   = false
   autoscaler_metrics = {
     "custom.googleapis.com/VMSeries/panSessionUtilization" = {
       target = 50
