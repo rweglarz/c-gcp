@@ -6,6 +6,10 @@ locals {
       a = cidrsubnet(var.cidr, 8, 21)
       b = cidrsubnet(var.cidr, 8, 22)
     }
+    psc_nat = {
+      a = cidrsubnet(var.cidr, 8, 23)
+      b = cidrsubnet(var.cidr, 8, 24)
+    }
 
     private_peers = {
       a = {

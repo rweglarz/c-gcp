@@ -22,3 +22,7 @@ variable "gcp_panorama_vpc_id" {
   default = null
 }
 
+
+variable "psc_attachment" {
+  default = null
+}
