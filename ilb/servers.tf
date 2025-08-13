@@ -25,4 +25,10 @@ resource "google_compute_instance" "servers" {
     network_ip = cidrhost(each.value.subnetwork.ip_cidr_range, 11 + (endswith(each.key, "-2")? 1 : 0))
   }
   tags = try(each.value.tags, null)
+
+  lifecycle {
+    ignore_changes = [
+      boot_disk[0].initialize_params[0].image
+    ]
+  }
 }
