@@ -31,6 +31,15 @@ locals {
         a = cidrsubnet(var.cidr, 8, 226)
       }
     }
+
+    private_ncc_peers = {
+      a = {
+        a = cidrsubnet(var.cidr, 8, 218)
+      }
+      b = {
+        a = cidrsubnet(var.cidr, 8, 228)
+      }
+    }
   }
   asn = {
     a  = 65510
@@ -69,5 +78,16 @@ locals {
     ]
   ])
   cidrs_v_m = { for v in local.cidrs_v_f: v.n => v }
-}
 
+  cidrs_ncc_f = flatten([
+    for lk,lv in local.cidrs.private_ncc_peers: [
+      for pk,pv in lv: {
+        n = "nccpeer-${lk}-${pk}"
+        lk = lk
+        pk = pk
+        cidr = pv
+      }
+    ]
+  ])
+  cidrs_ncc_m = { for v in local.cidrs_ncc_f: v.n => v }
+}

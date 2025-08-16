@@ -108,3 +108,7 @@ variable "gcp_ips" {
     },
   ]
 } 
+
+variable "deploy_ncc" {
+  default = false
+}

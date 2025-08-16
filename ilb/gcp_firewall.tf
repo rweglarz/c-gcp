@@ -16,6 +16,7 @@ resource "google_compute_firewall" "this-i" {
     { for k,v in google_compute_network.private: "private-${k}" => v.id },
     { for k,v in google_compute_network.peer: "peer-${k}" => v.id },
     { for k,v in google_compute_network.vpnpeer: "vpn-peer-${k}" => v.id },
+    { for k,v in google_compute_network.nccpeer: "ncc-peer-${k}" => v.id },
   )
   name      = "${var.name}-${each.key}-i"
   network   = each.value

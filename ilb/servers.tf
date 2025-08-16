@@ -1,13 +1,18 @@
 resource "google_compute_instance" "servers" {
-  for_each = {
-    private-a-1    = { subnetwork = google_compute_subnetwork.private["a"], tags = [ "workloads-pbr" ] }
-    private-a-2    = { subnetwork = google_compute_subnetwork.private["a"], tags = [ "workloads-pbr" ] }
-    private-b      = { subnetwork = google_compute_subnetwork.private["b"] }
-    peer-a-a-1     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-a"], tags = [ "workloads-pbr" ] }
-    peer-a-a-2     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-b"], tags = [ "workloads-pbr" ] }
-    vpnpeer-a-a-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-a"] }
-    vpnpeer-a-b-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-b"] }
-  }
+  for_each = merge(
+    {
+      private-a-1    = { subnetwork = google_compute_subnetwork.private["a"], tags = [ "workloads-pbr" ] }
+      private-a-2    = { subnetwork = google_compute_subnetwork.private["a"], tags = [ "workloads-pbr" ] }
+      private-b      = { subnetwork = google_compute_subnetwork.private["b"] }
+      peer-a-a-1     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-a"], tags = [ "workloads-pbr" ] }
+      peer-a-b-1     = { subnetwork = google_compute_subnetwork.peer["private-a-peer-b"], tags = [ "workloads-pbr" ] }
+      vpnpeer-a-a-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-a"] }
+      vpnpeer-a-b-1  = { subnetwork = google_compute_subnetwork.vpnpeer["private-a-vpnpeer-b"] }
+    },
+    { 
+      for k,v in google_compute_subnetwork.nccpeer: k=> { subnetwork = v }
+    }
+  )
   name         = "${var.name}-${each.key}"
   machine_type = var.srv_machine_type
   allow_stopping_for_update = true
