@@ -30,19 +30,13 @@ resource "google_network_connectivity_policy_based_route" "a" {
     dest_range = "172.16.0.0/12"
   }
   next_hop_ilb_ip = google_compute_forwarding_rule.private["a"].ip_address
-
-  virtual_machine {
-    tags = [
-      "workloads-pbr",
-    ]
-  }
 }
 
 resource "google_network_connectivity_policy_based_route" "privatevpn-aa--ab" {
   name = "${var.name}-privatevpn-aa-to-ab"
   description = "vpns in private-a"
   network = google_compute_network.private["a"].id
-  priority = 100
+  priority = 110
 
   filter {
     protocol_version = "IPV4"
@@ -56,7 +50,7 @@ resource "google_network_connectivity_policy_based_route" "privatevpn-ab--aa" {
   name = "${var.name}-privatevpn-ab-to-aa"
   description = "vpns in private-a"
   network = google_compute_network.private["a"].id
-  priority = 100
+  priority = 111
 
   filter {
     protocol_version = "IPV4"
