@@ -220,15 +220,20 @@ resource "google_compute_forwarding_rule" "public" {
 
 
 
-resource "google_compute_route" "route" {
+resource "google_compute_route" "private_dg" {
   for_each = google_compute_network.private
   name         = "${var.name}-dg-${each.key}"
   dest_range   = "0.0.0.0/0"
   network      = google_compute_network.private[each.key].id
-  next_hop_ilb = google_compute_forwarding_rule.private[each.key].ip_address
-  #next_hop_ilb = google_compute_forwarding_rule.fwdrule[count.index].self_link
+  next_hop_ilb = google_compute_forwarding_rule.private[each.key].self_link
   priority     = 10
-  # tags = [
-  #   "workloads"
-  # ]
+}
+
+resource "google_compute_route" "private_172" {
+  for_each = google_compute_network.private
+  name         = "${var.name}-172-${each.key}"
+  dest_range   = "172.16.0.0/12"
+  network      = google_compute_network.private[each.key].id
+  next_hop_ilb = google_compute_forwarding_rule.private[each.key].self_link
+  priority     = 10
 }
