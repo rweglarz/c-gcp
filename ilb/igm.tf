@@ -192,6 +192,34 @@ resource "google_compute_forwarding_rule" "private" {
 }
 
 
+
+resource "google_compute_region_backend_service" "public" {
+  provider              = google-beta
+  name                  = "${var.name}-public"
+  protocol              = "UNSPECIFIED"
+  load_balancing_scheme = "EXTERNAL"
+  health_checks         = [google_compute_region_health_check.fw.id]
+  session_affinity      = "CLIENT_IP"
+  backend {
+    group          = google_compute_region_instance_group_manager.fws.instance_group
+    balancing_mode = "CONNECTION"
+  }
+  connection_tracking_policy {
+    tracking_mode                                = "PER_SESSION"
+    # connection_persistence_on_unhealthy_backends = "NEVER_PERSIST"
+  }
+}
+
+resource "google_compute_forwarding_rule" "public" {
+  name                  = "${var.name}-public"
+  backend_service       = google_compute_region_backend_service.public.id
+  load_balancing_scheme = "EXTERNAL"
+  ip_protocol           = "L3_DEFAULT"
+  all_ports             = true
+}
+
+
+
 resource "google_compute_route" "route" {
   for_each = google_compute_network.private
   name         = "${var.name}-dg-${each.key}"
