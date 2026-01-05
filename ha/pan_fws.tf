@@ -37,7 +37,7 @@ resource "google_compute_instance" "fw" {
 
   boot_disk {
     initialize_params {
-      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/vmseries-${var.fw_image}"
+      image = "https://www.googleapis.com/compute/v1/projects/paloaltonetworksgcp-public/global/images/${var.fw_image}"
     }
     auto_delete = true
   }

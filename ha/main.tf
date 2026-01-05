@@ -11,9 +11,10 @@ terraform {
   required_providers {
     panos = {
       source = "PaloAltoNetworks/panos"
+      version = "~> 1.11"
     }
     google = {
-      version = "~> 6.9"
+      version = "~> 7.0"
     }
   }
 }
