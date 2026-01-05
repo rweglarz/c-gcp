@@ -23,6 +23,13 @@ variable "fw_count" {
   description = "Number of fws to deploy"
   type        = number
 }
+variable "fw_image" {
+  default = {
+    airs_byol = "ai-runtime-security-byol-1129"
+    vm_payg   = "vmseries-flex-bundle2-1126"
+    vm_byol   = "vmseries-flex-byol-1128"
+  }
+}
 
 variable "fw_machine_type" {
   type    = string

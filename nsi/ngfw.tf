@@ -43,9 +43,9 @@ locals {
     local.bootstrap_options_s1,
   )
   source_image = coalesce(
-    var.airs ? "projects/paloaltonetworksgcp-public/global/images/ai-runtime-security-byol-1125h1" : null,
-    var.payg ? "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle2-1126" : null,
-    "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1126"
+    var.airs ? "projects/paloaltonetworksgcp-public/global/images/${var.fw_image["airs_byol"]}" : null,
+    var.payg ? "projects/paloaltonetworksgcp-public/global/images/${var.fw_image["vm_payg"]}" : null,
+    "projects/paloaltonetworksgcp-public/global/images/${var.fw_image["vm_byol"]}"
   )
 
 }
