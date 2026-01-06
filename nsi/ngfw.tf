@@ -12,7 +12,7 @@ resource "google_compute_health_check" "ah" {
 }
 resource "google_compute_region_health_check" "fw" {
   name                = "${var.name}-r-healthcheck"
-  check_interval_sec  = 10
+  check_interval_sec  = 20
   healthy_threshold   = 3
   unhealthy_threshold = 2
   timeout_sec         = 1
@@ -71,7 +71,10 @@ resource "google_compute_instance_template" "fw" {
     subnetwork = google_compute_subnetwork.mgmt.id
   }
   network_interface {
-    subnetwork = google_compute_subnetwork.private.id
+    subnetwork = google_compute_subnetwork.nsi["in-band"].id
+  }
+  network_interface {
+    subnetwork = google_compute_subnetwork.nsi["out-of-band"].id
   }
 
   disk {
@@ -128,37 +131,32 @@ resource "google_compute_region_instance_group_manager" "fws" {
   }
 }
 
-
-
-resource "google_compute_region_backend_service" "fw_private" {
+resource "google_compute_region_backend_service" "nsi" {
+  for_each = local.nsi
+    
   provider              = google-beta
-  name                  = "${var.name}-bsvc-fw-prv"
+  name                  = "${var.name}-bsvc-fw-${each.key}"
   protocol              = "UNSPECIFIED"
   load_balancing_scheme = "INTERNAL"
   health_checks         = [google_compute_region_health_check.fw.id]
-  session_affinity      = "CLIENT_IP"
-  network               = google_compute_network.private.id
+  session_affinity      = each.value.is_mirror ? "NONE": "CLIENT_IP"
+  network               = google_compute_network.nsi[each.key].self_link
   backend {
     group          = google_compute_region_instance_group_manager.fws.instance_group
     balancing_mode = "CONNECTION"
   }
-  /*
-  backend {
-    group = google_compute_region_instance_group_manager.fws2.instance_group
-  }
-  */
 }
 
-resource "google_compute_forwarding_rule" "private" {
-  for_each              = toset(data.google_compute_zones.this.names)
-  name                  = "${var.name}-private-${each.key}"
-  backend_service       = google_compute_region_backend_service.fw_private.id
+resource "google_compute_forwarding_rule" "nsi" {
+  for_each              = local.nsi_to_zones
+
+  name                  = "${var.name}-nsi-${each.key}"
+  backend_service       = google_compute_region_backend_service.nsi[each.value["nsi_type"]].id
   load_balancing_scheme = "INTERNAL"
   ports                 = [6081]
   ip_protocol           = "UDP"
-  network               = google_compute_network.private.id
-  subnetwork            = google_compute_subnetwork.private.id
+  network               = google_compute_network.nsi[each.value["nsi_type"]].id
+  subnetwork            = google_compute_subnetwork.nsi[each.value["nsi_type"]].id
+
+  is_mirroring_collector = each.value.is_mirror
 }
-
-
-

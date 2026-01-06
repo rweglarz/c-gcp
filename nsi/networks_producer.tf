@@ -9,18 +9,20 @@ resource "google_compute_subnetwork" "mgmt" {
 }
 
 
-resource "google_compute_network" "private" {
-  name                            = "${var.name}-private"
+resource "google_compute_network" "nsi" {
+  for_each = local.nsi
+
+  name                            = "${var.name}-nsi-${each.key}"
   auto_create_subnetworks         = "false"
   delete_default_routes_on_create = true
 }
+resource "google_compute_subnetwork" "nsi" {
+  for_each = local.nsi
 
-resource "google_compute_subnetwork" "private" {
-  name          = "${var.name}-private-s"
-  ip_cidr_range = local.cidrs.private
-  network       = google_compute_network.private.id
+  name          = "${var.name}-nsi-${each.key}-s"
+  ip_cidr_range = local.nsi[each.key].cidr
+  network       = google_compute_network.nsi[each.key].id
 }
-
 
 resource "google_compute_router" "mgmt" {
   name    = "${var.name}-rtr-mgmt"
@@ -50,9 +52,11 @@ resource "google_compute_router_nat" "router_nat" {
 resource "google_compute_firewall" "producer-i" {
   for_each = merge(
     {
-      mgmt    = google_compute_network.mgmt.id
-      private = google_compute_network.private.id
+      mgmt            = google_compute_network.mgmt.id
+      nsi-in-band     = google_compute_network.nsi["in-band"].id
+      nsi-out-of-band = google_compute_network.nsi["out-of-band"].id
     },
+    { for k,v in google_compute_network.nsi: k => v.id }
   )
   name      = "${var.name}-${each.key}-i"
   network   = each.value

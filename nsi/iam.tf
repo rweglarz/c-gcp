@@ -1,5 +1,5 @@
 resource "google_service_account" "sa" {
-  account_id   = "pan-vm-sa-id"
+  account_id   = "pavm-sa-${var.name}"
   display_name = "${var.name} pan vm sa"
 }
 
