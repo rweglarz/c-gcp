@@ -24,6 +24,14 @@ provider "google" {
   add_terraform_attribution_label = false
   credentials                     = var.consumer_sa
 }
+provider "google-beta" {
+  alias                           = "consumer"
+  region                          = "europe-west1"
+  zone                            = "europe-west1-b"
+  project                         = var.gcp_project_consumer
+  add_terraform_attribution_label = false
+  credentials                     = var.consumer_sa
+}
 
 provider "google" {
   # used to create endpoint from producer user
@@ -45,7 +53,7 @@ terraform {
       # version = "2.0.0"
     }
     google = {
-      version = "~> 6.9"
+      version = "~> 7.0"
     }
   }
 }
