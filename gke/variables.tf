@@ -17,9 +17,17 @@ variable "mgmt_ips" {
   description = "List of IPs allowed for external access"
   type        = list(map(string))
 }
+variable "extra_ips" {
+  description = "List of IPs allowed for external access"
+  type        = list(map(string))
+}
 
 variable "gcp_panorama_vpc_id" {
   default = null
+}
+
+variable "gke_version" {
+  default = "1.31"
 }
 
 
