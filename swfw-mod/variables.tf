@@ -74,5 +74,8 @@ variable "machine_type" {
 }
 
 variable "ngfw_image" {
-  default = "ai-runtime-security-byol-1125h1"
+  default = {
+    fw = "ai-runtime-security-byol-11210"
+    tc = "ai-runtime-security-byol-1129"
+  }
 }

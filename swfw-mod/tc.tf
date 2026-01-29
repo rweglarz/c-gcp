@@ -2,7 +2,7 @@ module "tc" {
   source = "github.com/PaloAltoNetworks/terraform-google-swfw-modules//modules/vmseries?ref=v2.0.11"
 
   name                  = "${var.name}-tc"
-  custom_image          = "projects/paloaltonetworksgcp-public/global/images/${var.ngfw_image}"
+  custom_image          = "projects/paloaltonetworksgcp-public/global/images/${var.ngfw_image["tc"]}"
   zone                  = var.zones[0]
   machine_type          = "n2-standard-4"
   service_account       = module.iam_service_account.email

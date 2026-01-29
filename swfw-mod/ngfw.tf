@@ -16,7 +16,7 @@ module "ngfw" {
   regional_mig          = true
   service_account_email = module.iam_service_account.email
 
-  image                 = "projects/paloaltonetworksgcp-public/global/images/${var.ngfw_image}"
+  image                 = "projects/paloaltonetworksgcp-public/global/images/${var.ngfw_image["fw"]}"
   machine_type          = var.machine_type
   min_vmseries_replicas = var.ngfw_replicas
   max_vmseries_replicas = var.ngfw_replicas
