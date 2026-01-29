@@ -31,6 +31,7 @@ locals {
   )
   bootstrap_options_vm = merge(
     var.bootstrap_options.common,
+    var.bootstrap_options.vm,
     var.payg==false ? var.bootstrap_options.vm_byol : var.bootstrap_options.vm_payg,
     {
       vm-auth-key = panos_vm_auth_key.this.auth_key
@@ -48,9 +49,9 @@ locals {
     } : {},
   )
   source_image = coalesce(
-    var.airs ? "projects/paloaltonetworksgcp-public/global/images/ai-runtime-security-byol-1125h1" : null,
-    var.payg ? "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle2-1126" : null,
-    "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1126"
+    var.airs ? var.fw_images["airs_fw"]: null,
+    var.payg ? var.fw_images["vm_payg"]: null,
+    var.fw_images["default"]
   )
 
 }

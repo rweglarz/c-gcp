@@ -35,6 +35,15 @@ variable "fw_machine_type" {
   type = string
   default = "n2-standard-8"
 }
+variable "fw_images" {
+  default = {
+    airs_fw = "projects/paloaltonetworksgcp-public/global/images/ai-runtime-security-byol-11210"
+    airs_tc = "projects/paloaltonetworksgcp-public/global/images/ai-runtime-security-byol-1129"
+    payg    = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-bundle2-1126"
+    default = "projects/paloaltonetworksgcp-public/global/images/vmseries-flex-byol-1126"
+  }
+}
+
 variable "srv_machine_type"{
   type = string
   default = "f1-micro"
