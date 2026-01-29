@@ -34,6 +34,9 @@ variable "gke_version" {
   default = "1.31"
 }
 
+variable "airs_vpc_id" {
+  default = null
+}
 
 variable "psc_attachment" {
   default = null
