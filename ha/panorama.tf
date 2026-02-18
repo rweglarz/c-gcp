@@ -281,7 +281,7 @@ resource "panos_panorama_nat_rule_group" "ha_pre_nat" {
       }
       destination {
         static_translation {
-          address = google_compute_instance.srv0.network_interface[0].network_ip
+          address = google_compute_instance.srv["srv0"].network_interface[0].network_ip
         }
       }
     }

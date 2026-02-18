@@ -121,7 +121,11 @@ data "cloudinit_config" "linux" {
             Name=xfrm101
 
             [Route]
-            Destination=${google_compute_instance.srv0.network_interface[0].network_ip}/32
+            Destination=${google_compute_instance.srv["srv0"].network_interface[0].network_ip}/32
+            Scope=link
+
+            [Route]
+            Destination=${google_compute_instance.srv["srv1"].network_interface[0].network_ip}/32
             Scope=link
 
             [Route]
