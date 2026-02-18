@@ -209,4 +209,9 @@ resource "google_compute_instance" "linux" {
       nat_ip = google_compute_address.linux[count.index].address
     }
   }
+  lifecycle {
+    ignore_changes = [
+      boot_disk[0].initialize_params[0].image
+    ]
+  }
 }
