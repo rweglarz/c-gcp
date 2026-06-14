@@ -1,7 +1,8 @@
 connections {
-   ike-tunnel {
+%{ for t_name, v in tunnels ~}
+   ike-${t_name} {
         local_addrs  = ${local_ip}
-        remote_addrs = ${peer_ip}
+        remote_addrs = ${v.peer_ip}
         version = 2
         proposals = aes256-sha256-modp4096,aes128-sha1-modp1024
         keyingtries = 0
@@ -12,11 +13,11 @@ connections {
         }
         remote {
             auth = psk
-            id = ${peer_ip}
+            id = ${v.peer_ip}
             revocation = relaxed
         }
         children {
-            s2s0 {
+            s2s-${t_name} {
                 local_ts = 0.0.0.0/0
                 remote_ts = 0.0.0.0/0
                 esp_proposals = aes256-sha1,aes128-sha1
@@ -25,14 +26,17 @@ connections {
                 rekey_time = 3600
             }
         }
-        if_id_in = ${if_id}
-        if_id_out = ${if_id}
+        if_id_in = ${v.if_id}
+        if_id_out = ${v.if_id}
    }
+%{ endfor ~}
 }
 
 secrets {
-   ike-tunnel {
-        id-fw = ${peer_ip}
+%{ for t_name, v in tunnels ~}
+   ike-${t_name} {
+        id-fw = ${v.peer_ip}
         secret = "${vpn_psk}"
    }
+%{ endfor ~}
 }

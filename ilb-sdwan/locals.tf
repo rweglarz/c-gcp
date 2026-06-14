@@ -31,21 +31,31 @@ locals {
     redundant = cidrhost(local.cidrs.vpn, 3)
   }
 
-  # IPSec Tunnel configurations (Overlay network link-local APIPA ranges)
+  # IPSec Tunnel configurations (Overlay network link-local APIPA ranges - Full Mesh)
   tunnel_cidrs = {
-    sdgw1 = "169.254.31.0/30"
-    sdgw2 = "169.254.32.0/30"
+    sdgw1_t1 = "169.254.31.0/30"
+    sdgw1_t2 = "169.254.31.4/30"
+    sdgw2_t1 = "169.254.32.0/30"
+    sdgw2_t2 = "169.254.32.4/30"
   }
 
   # Dynamically derived BGP IPs for both sides of the IPsec tunnels
   tunnel_ips = {
-    sdgw1 = {
-      router_ip = cidrhost(local.tunnel_cidrs.sdgw1, 1)
-      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw1, 2)
+    sdgw1_t1 = {
+      router_ip = cidrhost(local.tunnel_cidrs.sdgw1_t1, 1)
+      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw1_t1, 2)
     }
-    sdgw2 = {
-      router_ip = cidrhost(local.tunnel_cidrs.sdgw2, 1)
-      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw2, 2)
+    sdgw1_t2 = {
+      router_ip = cidrhost(local.tunnel_cidrs.sdgw1_t2, 1)
+      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw1_t2, 2)
+    }
+    sdgw2_t1 = {
+      router_ip = cidrhost(local.tunnel_cidrs.sdgw2_t1, 1)
+      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw2_t1, 2)
+    }
+    sdgw2_t2 = {
+      router_ip = cidrhost(local.tunnel_cidrs.sdgw2_t2, 1)
+      sdgw_ip   = cidrhost(local.tunnel_cidrs.sdgw2_t2, 2)
     }
   }
 }

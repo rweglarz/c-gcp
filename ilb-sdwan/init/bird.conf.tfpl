@@ -26,11 +26,12 @@ protocol kernel {
   learn yes;
 }
 
-protocol bgp vpn_peer {
+%{ for t_name, v in tunnels ~}
+protocol bgp vpn_peer_${t_name} {
   local as ${local_asn};
-  neighbor ${peer_bgp_ip} as ${peer_remote_asn};
+  neighbor ${v.peer_bgp_ip} as ${v.peer_remote_asn};
   multihop;
-  source address ${bgp_source_ip};
+  source address ${v.bgp_source_ip};
   graceful restart on;
   hold time 15;
   ipv4 {
@@ -41,6 +42,7 @@ protocol bgp vpn_peer {
     };
   };
 }
+%{ endfor ~}
 
 protocol bgp ncc_p {
   local as ${local_asn};
