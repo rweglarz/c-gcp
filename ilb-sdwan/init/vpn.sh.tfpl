@@ -1,0 +1,19 @@
+#!/bin/bash
+set -o xtrace
+
+# Auto-detect primary network interface (e.g. eth0 or ens4)
+PRIMARY_IF=$(ip -o link show | awk -F': ' '{print $2}' | grep -e '^eth' -e '^ens' -e '^enp' | head -n 1)
+
+# Recreate XFRM point-to-point IPsec interface
+ip link del dev xfrm${if_id} 2>/dev/null || true
+ip link add xfrm${if_id} type xfrm dev $PRIMARY_IF if_id ${if_id}
+ip link set xfrm${if_id} up
+
+# Assign the local BGP APIPA IP with a /30 netmask directly to the XFRM interface.
+# This makes the remote BGP peer IP (which is .1 in the same /30 subnet) directly connected,
+# allowing BIRD's protocol direct to automatically discover and resolve it.
+ip addr add ${bgp_source_ip}/30 dev xfrm${if_id} 2>/dev/null || true
+
+# Restart BIRD Routing Daemon after virtual link is fully established.
+# This guarantees BIRD scans active XFRM links and successfully binds to its BGP source IPs on every boot.
+systemctl restart bird

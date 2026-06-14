@@ -1,0 +1,53 @@
+router id ${router_id};
+
+log "/var/log/bird/bird.log" all;
+debug protocols {events,states};
+
+protocol device {
+  scan time 10;
+}
+
+protocol direct {
+  interface "lo", "xfrm*";
+  ipv4;
+}
+
+protocol kernel {
+  ipv4 {
+    export all;
+    import none;
+  };
+  scan time 15;
+  learn yes;
+}
+
+protocol bgp vpn_peer {
+  local as ${local_asn};
+  neighbor ${peer_bgp_ip} as ${peer_remote_asn};
+  multihop;
+  source address ${bgp_source_ip};
+  graceful restart on;
+  hold time 15;
+  ipv4 {
+    import all;
+    export filter {
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      reject;
+    };
+  };
+}
+
+protocol bgp local_peer {
+  local as ${local_asn};
+  neighbor ${peer_local_ip} as ${peer_local_asn};
+  source address ${local_ip};
+  graceful restart on;
+  hold time 15;
+  ipv4 {
+    import all;
+    export filter {
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      reject;
+    };
+  };
+}
