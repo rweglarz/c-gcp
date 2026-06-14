@@ -16,8 +16,8 @@ resource "google_network_connectivity_spoke" "sdgw_spoke" {
   }
 }
 
-resource "google_compute_router_peer" "vpn_sdgw1" {
-  name                      = "${var.name}-peer-vpn-sdgw1"
+resource "google_compute_router_peer" "vpn_sdgw1_p" {
+  name                      = "${var.name}-peer-vpn-sdgw1-p"
   router                    = google_compute_router.router_vpn.name
   region                    = var.region
   interface                 = google_compute_router_interface.vpn_primary.name
@@ -29,8 +29,34 @@ resource "google_compute_router_peer" "vpn_sdgw1" {
   ]
 }
 
-resource "google_compute_router_peer" "vpn_sdgw2" {
-  name                      = "${var.name}-peer-vpn-sdgw2"
+resource "google_compute_router_peer" "vpn_sdgw1_r" {
+  name                      = "${var.name}-peer-vpn-sdgw1-r"
+  router                    = google_compute_router.router_vpn.name
+  region                    = var.region
+  interface                 = google_compute_router_interface.vpn_redundant.name
+  peer_asn                  = local.asn.sdgw1
+  peer_ip_address           = local.sdgw_ips.sdgw1
+  router_appliance_instance = google_compute_instance.sdgw["sdgw1"].self_link
+  depends_on = [ 
+    google_network_connectivity_spoke.sdgw_spoke
+  ]
+}
+
+resource "google_compute_router_peer" "vpn_sdgw2_p" {
+  name                      = "${var.name}-peer-vpn-sdgw2-p"
+  router                    = google_compute_router.router_vpn.name
+  region                    = var.region
+  interface                 = google_compute_router_interface.vpn_primary.name
+  peer_asn                  = local.asn.sdgw2
+  peer_ip_address           = local.sdgw_ips.sdgw2
+  router_appliance_instance = google_compute_instance.sdgw["sdgw2"].self_link
+  depends_on = [ 
+    google_network_connectivity_spoke.sdgw_spoke
+  ]
+}
+
+resource "google_compute_router_peer" "vpn_sdgw2_r" {
+  name                      = "${var.name}-peer-vpn-sdgw2-r"
   router                    = google_compute_router.router_vpn.name
   region                    = var.region
   interface                 = google_compute_router_interface.vpn_redundant.name

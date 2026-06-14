@@ -6,28 +6,30 @@ resource "google_compute_address" "sdgw_pub" {
 locals {
   sdgw_configs = {
     sdgw1 = {
-      local_ip        = local.sdgw_ips.sdgw1
-      local_id        = google_compute_address.sdgw_pub["sdgw1"].address
-      peer_ip         = google_compute_ha_vpn_gateway.remote.vpn_interfaces[0].ip_address
-      if_id           = 101
-      bgp_source_ip   = local.tunnel_ips.sdgw1.sdgw_ip
-      peer_bgp_ip     = local.tunnel_ips.sdgw1.router_ip
-      local_asn       = local.asn.sdgw1
-      peer_remote_asn = local.asn.remote_router
-      peer_local_ip   = local.vpn_router_ips.primary
-      peer_local_asn  = local.asn.vpn_router
+      local_ip                = local.sdgw_ips.sdgw1
+      local_id                = google_compute_address.sdgw_pub["sdgw1"].address
+      peer_ip                 = google_compute_ha_vpn_gateway.remote.vpn_interfaces[0].ip_address
+      if_id                   = 101
+      bgp_source_ip           = local.tunnel_ips.sdgw1.sdgw_ip
+      peer_bgp_ip             = local.tunnel_ips.sdgw1.router_ip
+      local_asn               = local.asn.sdgw1
+      peer_remote_asn         = local.asn.remote_router
+      peer_local_ip_primary   = local.vpn_router_ips.primary
+      peer_local_ip_redundant = local.vpn_router_ips.redundant
+      peer_local_asn          = local.asn.vpn_router
     }
     sdgw2 = {
-      local_ip        = local.sdgw_ips.sdgw2
-      local_id        = google_compute_address.sdgw_pub["sdgw2"].address
-      peer_ip         = google_compute_ha_vpn_gateway.remote.vpn_interfaces[1].ip_address
-      if_id           = 102
-      bgp_source_ip   = local.tunnel_ips.sdgw2.sdgw_ip
-      peer_bgp_ip     = local.tunnel_ips.sdgw2.router_ip
-      local_asn       = local.asn.sdgw2
-      peer_remote_asn = local.asn.remote_router
-      peer_local_ip   = local.vpn_router_ips.redundant
-      peer_local_asn  = local.asn.vpn_router
+      local_ip                = local.sdgw_ips.sdgw2
+      local_id                = google_compute_address.sdgw_pub["sdgw2"].address
+      peer_ip                 = google_compute_ha_vpn_gateway.remote.vpn_interfaces[1].ip_address
+      if_id                   = 102
+      bgp_source_ip           = local.tunnel_ips.sdgw2.sdgw_ip
+      peer_bgp_ip             = local.tunnel_ips.sdgw2.router_ip
+      local_asn               = local.asn.sdgw2
+      peer_remote_asn         = local.asn.remote_router
+      peer_local_ip_primary   = local.vpn_router_ips.primary
+      peer_local_ip_redundant = local.vpn_router_ips.redundant
+      peer_local_asn          = local.asn.vpn_router
     }
   }
 }
@@ -45,14 +47,15 @@ data "cloudinit_config" "sdgw" {
         {
           path = "/etc/bird/bird.conf"
           content = templatefile("${path.module}/init/bird.conf.tfpl", {
-            router_id       = each.value.local_ip
-            local_asn       = each.value.local_asn
-            bgp_source_ip   = each.value.bgp_source_ip
-            peer_bgp_ip     = each.value.peer_bgp_ip
-            peer_remote_asn = each.value.peer_remote_asn
-            local_ip        = each.value.local_ip
-            peer_local_ip   = each.value.peer_local_ip
-            peer_local_asn  = each.value.peer_local_asn
+            router_id               = each.value.local_ip
+            local_asn               = each.value.local_asn
+            bgp_source_ip           = each.value.bgp_source_ip
+            peer_bgp_ip             = each.value.peer_bgp_ip
+            peer_remote_asn         = each.value.peer_remote_asn
+            local_ip                = each.value.local_ip
+            peer_local_ip_primary   = each.value.peer_local_ip_primary
+            peer_local_ip_redundant = each.value.peer_local_ip_redundant
+            peer_local_asn          = each.value.peer_local_asn
           })
         },
         {

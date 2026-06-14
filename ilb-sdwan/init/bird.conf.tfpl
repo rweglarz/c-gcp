@@ -15,7 +15,12 @@ protocol direct {
 protocol kernel {
   ipv4 {
     export all;
-    import none;
+    import filter {
+      # Import local subnet/host routes so BIRD can resolve local Cloud Router next-hops,
+      # but reject default and metadata routes to prevent 'strange next-hop' warnings.
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      reject;
+    };
   };
   scan time 15;
   learn yes;
@@ -37,9 +42,26 @@ protocol bgp vpn_peer {
   };
 }
 
-protocol bgp local_peer {
+protocol bgp ncc_p {
   local as ${local_asn};
-  neighbor ${peer_local_ip} as ${peer_local_asn};
+  neighbor ${peer_local_ip_primary} as ${peer_local_asn};
+  multihop;
+  source address ${local_ip};
+  graceful restart on;
+  hold time 15;
+  ipv4 {
+    import all;
+    export filter {
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      reject;
+    };
+  };
+}
+
+protocol bgp ncc_r {
+  local as ${local_asn};
+  neighbor ${peer_local_ip_redundant} as ${peer_local_asn};
+  multihop;
   source address ${local_ip};
   graceful restart on;
   hold time 15;
