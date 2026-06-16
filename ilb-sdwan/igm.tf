@@ -147,7 +147,7 @@ resource "google_compute_forwarding_rule" "private" {
   ip_protocol           = "TCP"
   network               = each.value.network
   subnetwork            = each.value.subnet
-  ip_address            = cidrhost(each.value.cidr, 5) # Reservs .5 as default ILB gateway
+  ip_address            = cidrhost(each.value.cidr, 253)
 }
 
 #region Static Routing
