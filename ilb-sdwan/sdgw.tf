@@ -13,6 +13,7 @@ locals {
       peer_local_ip_primary   = local.vpn_router_ips.primary
       peer_local_ip_redundant = local.vpn_router_ips.redundant
       peer_local_asn          = local.asn.vpn_router
+      prepend_as              = false
       
       tunnels = {
         t1 = {
@@ -38,6 +39,7 @@ locals {
       peer_local_ip_primary   = local.vpn_router_ips.primary
       peer_local_ip_redundant = local.vpn_router_ips.redundant
       peer_local_asn          = local.asn.vpn_router
+      prepend_as              = true
       
       tunnels = {
         t1 = {
@@ -81,6 +83,7 @@ data "cloudinit_config" "sdgw" {
             peer_local_ip_redundant = each.value.peer_local_ip_redundant
             peer_local_asn          = each.value.peer_local_asn
             tunnels                 = each.value.tunnels
+            prepend_as              = each.value.prepend_as
           })
         },
         # swanctl.conf IPsec Configuration

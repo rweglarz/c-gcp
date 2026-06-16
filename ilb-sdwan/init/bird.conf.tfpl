@@ -1,3 +1,5 @@
+define LOCAL_AS = ${local_asn};
+
 router id ${router_id};
 
 log "/var/log/bird/bird.log" all;
@@ -28,7 +30,7 @@ protocol kernel {
 
 %{ for t_name, v in tunnels ~}
 protocol bgp vpn_peer_${t_name} {
-  local as ${local_asn};
+  local as LOCAL_AS;
   neighbor ${v.peer_bgp_ip} as ${v.peer_remote_asn};
   multihop;
   source address ${v.bgp_source_ip};
@@ -37,7 +39,13 @@ protocol bgp vpn_peer_${t_name} {
   ipv4 {
     import all;
     export filter {
-      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then {
+        %{ if prepend_as ~}
+        bgp_path.prepend(LOCAL_AS);
+        bgp_path.prepend(LOCAL_AS);
+        %{ endif ~}
+        accept;
+      }
       reject;
     };
   };
@@ -45,7 +53,7 @@ protocol bgp vpn_peer_${t_name} {
 %{ endfor ~}
 
 protocol bgp ncc_p {
-  local as ${local_asn};
+  local as LOCAL_AS;
   neighbor ${peer_local_ip_primary} as ${peer_local_asn};
   multihop;
   source address ${local_ip};
@@ -54,14 +62,20 @@ protocol bgp ncc_p {
   ipv4 {
     import all;
     export filter {
-      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then {
+        %{ if prepend_as ~}
+        bgp_path.prepend(LOCAL_AS);
+        bgp_path.prepend(LOCAL_AS);
+        %{ endif ~}
+        accept;
+      }
       reject;
     };
   };
 }
 
 protocol bgp ncc_r {
-  local as ${local_asn};
+  local as LOCAL_AS;
   neighbor ${peer_local_ip_redundant} as ${peer_local_asn};
   multihop;
   source address ${local_ip};
@@ -70,7 +84,13 @@ protocol bgp ncc_r {
   ipv4 {
     import all;
     export filter {
-      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then accept;
+      if (net ~ [10.0.0.0/8+, 172.16.0.0/12+, 192.168.0.0/16+] ) then {
+        %{ if prepend_as ~}
+        bgp_path.prepend(LOCAL_AS);
+        bgp_path.prepend(LOCAL_AS);
+        %{ endif ~}
+        accept;
+      }
       reject;
     };
   };
