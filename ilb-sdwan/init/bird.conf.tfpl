@@ -16,7 +16,12 @@ protocol direct {
 
 protocol kernel {
   ipv4 {
-    export all;
+    export filter {
+      # Don't re-install connected routes (e.g. the xfrm /30s); the kernel already
+      # has them. This avoids duplicate 'proto bird' routes and 'Netlink: File exists'.
+      if source = RTS_DEVICE then reject;
+      accept;
+    };
     import filter {
       # Import local subnet/host routes so BIRD can resolve local Cloud Router next-hops,
       # but reject default and metadata routes to prevent 'strange next-hop' warnings.
